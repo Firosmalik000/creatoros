@@ -1,0 +1,10 @@
+Use case: photorealistic-natural
+Asset type: CreatorOS illustrative creator profile portrait
+Primary request: a candid editorial portrait of an Indonesian female food content creator plating a colorful modern Southeast Asian dish while filming with a smartphone on a compact tripod.
+Scene/backdrop: warm daylight home studio kitchen in Jakarta
+Style/medium: premium natural agency photography, true skin texture, realistic hands, documentary rather than posed
+Composition/framing: vertical 4:5 portrait, waist-up, subject clearly distinct and centered with working context visible
+Lighting/mood: soft tropical daylight, capable and approachable
+Color palette: warm cream, herbs, terracotta, natural wood
+Constraints: no logos, no written text, no watermark, no fake UI
+Avoid: stock-photo smile, glossy skin, clutter

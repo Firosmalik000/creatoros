@@ -1,0 +1,60 @@
+{
+  "Metadata": {
+    "title": "CreatorOS — Pencipta disahkan, diurus oleh agensi",
+    "description": "Cari, tempah dan urus kolaborasi bersama pencipta kandungan yang disahkan dalam satu platform."
+  },
+  "Nav": {
+    "discover": "Cari pencipta",
+    "how": "Cara ia berfungsi",
+    "brands": "Untuk jenama",
+    "creators": "Untuk pencipta",
+    "login": "Log masuk",
+    "start": "Mulakan kempen",
+    "language": "Bahasa"
+  },
+  "Home": {
+    "heroTitleSerif": "Pencipta yang tepat.",
+    "heroTitleSans": "Proses yang terurus.",
+    "heroBody": "Temui bakat disahkan, hantar brief, urus semakan, dan selesaikan pembayaran—dengan kawalan kualiti agensi pada setiap langkah.",
+    "heroVisualAlt": "Tiga pencipta kandungan Asia Tenggara menghasilkan kandungan makanan, teknologi, dan lifestyle",
+    "contactLabel": "Pencipta pilihan / Asia Tenggara",
+    "primaryCta": "Terokai pencipta",
+    "secondaryCta": "Sertai sebagai pencipta",
+    "managed": "Dipilih dan diurus agensi",
+    "verified": "Pencipta disahkan",
+    "structured": "Brief dan semakan berstruktur",
+    "payments": "Pembayaran dan payout boleh dijejak",
+    "demoLabel": "Pratonton produk · data ilustrasi",
+    "rosterTitle": "Bakat untuk setiap cerita jenama.",
+    "rosterBody": "Daripada UGC yang semula jadi hingga produksi kempen berbilang platform—pilih mengikut niche, lokasi, audience, dan format kandungan.",
+    "viewAll": "Lihat semua pencipta",
+    "workflowTitle": "Satu aliran, daripada carian hingga penerbitan.",
+    "workflowBody": "CreatorOS memastikan semua pihak bekerja daripada brief, status, dan versi fail yang sama.",
+    "stepOne": "Temui",
+    "stepOneBody": "Tapis pencipta disahkan berdasarkan keperluan kempen anda.",
+    "stepTwo": "Berkolaborasi",
+    "stepTwoBody": "Urus brief, submission, maklum balas, dan semakan dalam konteks.",
+    "stepThree": "Selesaikan",
+    "stepThreeBody": "Approval, pembayaran, komisen, dan payout direkod dengan kemas.",
+    "agencyTitle": "Marketplace dengan manusia di belakangnya.",
+    "agencyBody": "Agensi bukan sekadar perantara. Kami mengesahkan pencipta, membantu matching, dan menjaga standard kerja dari mula hingga selesai.",
+    "agencyCta": "Ketahui managed marketplace",
+    "managedStamp": "Diurus",
+    "finalTitle": "Kempen seterusnya bermula dengan pencipta yang tepat.",
+    "finalBody": "Bina shortlist, hantar brief, dan urus produksi tanpa spreadsheet yang berselerak.",
+    "footerNote": "Nama dan data pencipta dalam pratonton ini adalah ilustrasi."
+  },
+  "Creators": {
+    "title": "Pencipta disahkan untuk idea seterusnya",
+    "description": "Pratonton direktori Phase 0 menggunakan data ilustrasi. Search, filter, dan data produksi hadir pada Phase 3.",
+    "back": "Kembali ke laman utama",
+    "emptyTitle": "Direktori live akan datang",
+    "emptyBody": "Asas locale, SEO, dan creator card sedia disambungkan ke API selepas creator foundation selesai."
+  },
+  "Common": {
+    "illustrative": "Data ilustrasi",
+    "verified": "Disahkan",
+    "followers": "pengikut",
+    "engagement": "engagement"
+  }
+}

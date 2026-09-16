@@ -1,0 +1,60 @@
+{
+  "Metadata": {
+    "title": "CreatorOS — Creator terverifikasi, dikelola agency",
+    "description": "Temukan, pesan, dan kelola kolaborasi bersama content creator terverifikasi dalam satu platform."
+  },
+  "Nav": {
+    "discover": "Cari creator",
+    "how": "Cara kerja",
+    "brands": "Untuk brand",
+    "creators": "Untuk creator",
+    "login": "Masuk",
+    "start": "Mulai campaign",
+    "language": "Bahasa"
+  },
+  "Home": {
+    "heroTitleSerif": "Creator yang tepat.",
+    "heroTitleSans": "Proses yang terkelola.",
+    "heroBody": "Temukan talenta terverifikasi, kirim brief, kelola revisi, dan selesaikan pembayaran—dengan quality control agency di setiap langkah.",
+    "heroVisualAlt": "Tiga content creator Asia Tenggara sedang memproduksi konten makanan, teknologi, dan lifestyle",
+    "contactLabel": "Creator pilihan / Asia Tenggara",
+    "primaryCta": "Jelajahi creator",
+    "secondaryCta": "Gabung sebagai creator",
+    "managed": "Dikurasi dan dikelola agency",
+    "verified": "Creator terverifikasi",
+    "structured": "Brief dan revisi terstruktur",
+    "payments": "Pembayaran dan payout terlacak",
+    "demoLabel": "Preview produk · data ilustratif",
+    "rosterTitle": "Talenta untuk setiap cerita brand.",
+    "rosterBody": "Dari UGC yang terasa natural sampai produksi campaign lintas platform—pilih berdasarkan niche, lokasi, audience, dan format konten.",
+    "viewAll": "Lihat semua creator",
+    "workflowTitle": "Satu alur, dari pencarian sampai publikasi.",
+    "workflowBody": "CreatorOS menjaga semua orang bekerja dari brief, status, dan versi file yang sama.",
+    "stepOne": "Temukan",
+    "stepOneBody": "Filter creator terverifikasi berdasarkan kebutuhan campaign.",
+    "stepTwo": "Kolaborasi",
+    "stepTwoBody": "Kelola brief, submission, feedback, dan revisi dalam konteks.",
+    "stepThree": "Selesaikan",
+    "stepThreeBody": "Approval, pembayaran, komisi, dan payout tercatat rapi.",
+    "agencyTitle": "Marketplace dengan manusia di belakangnya.",
+    "agencyBody": "Agency bukan sekadar perantara. Kami memverifikasi creator, membantu matching, dan menjaga standar pekerjaan dari awal sampai selesai.",
+    "agencyCta": "Pelajari managed marketplace",
+    "managedStamp": "Dikelola",
+    "finalTitle": "Campaign berikutnya dimulai dari creator yang tepat.",
+    "finalBody": "Bangun shortlist, kirim brief, dan kelola produksi tanpa spreadsheet yang tercecer.",
+    "footerNote": "Nama dan data creator pada preview ini bersifat ilustratif."
+  },
+  "Creators": {
+    "title": "Creator terverifikasi untuk ide berikutnya",
+    "description": "Preview direktori Phase 0 dengan data ilustratif. Search, filter, dan data produksi akan hadir pada Phase 3.",
+    "back": "Kembali ke beranda",
+    "emptyTitle": "Direktori live segera hadir",
+    "emptyBody": "Fondasi locale, SEO, dan creator card sudah siap untuk dihubungkan ke API setelah creator foundation selesai."
+  },
+  "Common": {
+    "illustrative": "Data ilustratif",
+    "verified": "Terverifikasi",
+    "followers": "followers",
+    "engagement": "engagement"
+  }
+}

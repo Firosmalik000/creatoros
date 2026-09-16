@@ -1,0 +1,60 @@
+{
+  "Metadata": {
+    "title": "CreatorOS — Verified creators, managed by an agency",
+    "description": "Find, hire, and manage collaborations with verified content creators in one platform."
+  },
+  "Nav": {
+    "discover": "Find creators",
+    "how": "How it works",
+    "brands": "For brands",
+    "creators": "For creators",
+    "login": "Log in",
+    "start": "Start a campaign",
+    "language": "Language"
+  },
+  "Home": {
+    "heroTitleSerif": "The right creator.",
+    "heroTitleSans": "A process that stays on track.",
+    "heroBody": "Discover verified talent, send briefs, manage revisions, and settle payments—with agency quality control at every step.",
+    "heroVisualAlt": "Three Southeast Asian content creators producing food, technology, and lifestyle content",
+    "contactLabel": "Selected creators / Southeast Asia",
+    "primaryCta": "Explore creators",
+    "secondaryCta": "Join as a creator",
+    "managed": "Curated and agency-managed",
+    "verified": "Verified creators",
+    "structured": "Structured briefs and revisions",
+    "payments": "Traceable payments and payouts",
+    "demoLabel": "Product preview · illustrative data",
+    "rosterTitle": "Talent for every brand story.",
+    "rosterBody": "From natural-feeling UGC to multi-platform campaign production—choose by niche, location, audience, and content format.",
+    "viewAll": "View all creators",
+    "workflowTitle": "One flow, from discovery to publish.",
+    "workflowBody": "CreatorOS keeps everyone working from the same brief, status, and file version.",
+    "stepOne": "Discover",
+    "stepOneBody": "Filter verified creators around your campaign requirements.",
+    "stepTwo": "Collaborate",
+    "stepTwoBody": "Manage briefs, submissions, feedback, and revisions in context.",
+    "stepThree": "Complete",
+    "stepThreeBody": "Approvals, payments, commissions, and payouts stay recorded.",
+    "agencyTitle": "A marketplace with people behind it.",
+    "agencyBody": "The agency is more than an intermediary. We verify creators, help with matching, and protect the quality bar from start to finish.",
+    "agencyCta": "Learn about the managed marketplace",
+    "managedStamp": "Managed",
+    "finalTitle": "Your next campaign starts with the right creator.",
+    "finalBody": "Build a shortlist, send a brief, and manage production without scattered spreadsheets.",
+    "footerNote": "Creator names and data in this preview are illustrative."
+  },
+  "Creators": {
+    "title": "Verified creators for your next idea",
+    "description": "A Phase 0 directory preview using illustrative data. Production search, filters, and data arrive in Phase 3.",
+    "back": "Back to home",
+    "emptyTitle": "The live directory is coming soon",
+    "emptyBody": "Locale, SEO, and creator-card foundations are ready to connect to the API after creator foundation is complete."
+  },
+  "Common": {
+    "illustrative": "Illustrative data",
+    "verified": "Verified",
+    "followers": "followers",
+    "engagement": "engagement"
+  }
+}

@@ -1,0 +1,14 @@
+node_modules/
+.next/
+coverage/
+dist/
+bin/
+.env
+.env.local
+*.log
+*.tsbuildinfo
+.DS_Store
+.idea/
+.vscode/
+.impeccable/review/
+apps/api/tmp/

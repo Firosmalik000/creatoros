@@ -1,0 +1,49 @@
+openapi: 3.1.0
+info:
+  title: CreatorOS API
+  version: 0.1.0
+  description: REST contract for the CreatorOS modular monolith.
+servers:
+  - url: http://localhost:8080
+    description: Local API
+paths:
+  /health/live:
+    get:
+      operationId: getLiveness
+      summary: Check whether the API process is live
+      tags: [Health]
+      responses:
+        "200":
+          description: The process is live.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /health/ready:
+    get:
+      operationId: getReadiness
+      summary: Check whether the API is ready to receive traffic
+      tags: [Health]
+      responses:
+        "200":
+          description: The API is ready.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [status, timestamp]
+          properties:
+            status:
+              type: string
+              enum: [live, ready]
+            timestamp:
+              type: string
+              format: date-time

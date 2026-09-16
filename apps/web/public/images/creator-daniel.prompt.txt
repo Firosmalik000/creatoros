@@ -1,0 +1,10 @@
+Use case: photorealistic-natural
+Asset type: CreatorOS illustrative creator profile portrait
+Primary request: a candid editorial portrait of a Malaysian male technology content creator demonstrating a compact unbranded gadget to camera at a clean review desk.
+Scene/backdrop: modern daylight creator studio in Kuala Lumpur with subtle city context
+Style/medium: premium natural agency photography, true skin texture, realistic hands and camera equipment
+Composition/framing: vertical 4:5 portrait, waist-up, subject clearly distinct and centered with filming setup visible
+Lighting/mood: cool natural daylight, focused and credible
+Color palette: charcoal, warm wood, muted cornflower accents
+Constraints: no logos, no written text, no watermark, no fake UI
+Avoid: cyberpunk, gamer room, corporate stock photography

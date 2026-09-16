@@ -1,0 +1,21 @@
+{
+  "name": "creatoros",
+  "private": true,
+  "packageManager": "npm@11.12.1",
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@creatoros/web",
+    "dev:web": "npm run dev --workspace=@creatoros/web",
+    "lint": "npm run lint --workspace=@creatoros/web",
+    "typecheck": "npm run typecheck --workspace=@creatoros/web",
+    "test": "npm run test --workspace=@creatoros/web",
+    "build": "npm run build --workspace=@creatoros/web",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "3.9.6"
+  }
+}
