@@ -18,6 +18,6 @@ Each business module may contain `domain`, `service`, `repository`, `handler`, a
 
 - API responses use `{ "data": ..., "meta": ... }` or a stable error envelope.
 - Request IDs are returned as `X-Request-ID`.
-- Health endpoints live outside authenticated business routes.
+- Health endpoints live outside authenticated business routes; readiness covers PostgreSQL and Redis.
 - Configuration comes from environment variables and is validated at startup.
 - OpenTelemetry hooks may be introduced without changing business modules.

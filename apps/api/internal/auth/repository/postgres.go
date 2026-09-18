@@ -61,6 +61,9 @@ func (repository *Postgres) CreateUser(ctx context.Context, params domain.Create
 	`, userID, params.VerificationTokenHash, params.VerificationExpiresAt); err != nil {
 		return domain.User{}, fmt.Errorf("insert verification token: %w", err)
 	}
+	if err := insertOutbox(ctx, tx, params.Notification); err != nil {
+		return domain.User{}, err
+	}
 
 	user, err := loadUser(ctx, tx, userID)
 	if err != nil {
@@ -120,10 +123,14 @@ func (repository *Postgres) VerifyEmail(ctx context.Context, tokenHash []byte, n
 
 	var userID string
 	err = tx.QueryRow(ctx, `
-		SELECT user_id
-		FROM email_verification_tokens
-		WHERE token_hash = $1 AND consumed_at IS NULL AND expires_at > $2
-		FOR UPDATE
+		SELECT token.user_id
+		FROM email_verification_tokens token
+		JOIN users user_account ON user_account.id = token.user_id
+		WHERE token.token_hash = $1
+		  AND token.consumed_at IS NULL
+		  AND token.expires_at > $2
+		  AND user_account.status = 'pending_verification'
+		FOR UPDATE OF token, user_account
 	`, tokenHash, now).Scan(&userID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return domain.User{}, domain.ErrInvalidToken
@@ -230,7 +237,7 @@ func (repository *Postgres) RevokeSession(ctx context.Context, tokenHash []byte,
 	return nil
 }
 
-func (repository *Postgres) CreatePasswordReset(ctx context.Context, email string, tokenHash []byte, expiresAt time.Time) (bool, error) {
+func (repository *Postgres) CreatePasswordReset(ctx context.Context, params domain.CreatePasswordResetParams) (bool, error) {
 	tx, err := repository.pool.Begin(ctx)
 	if err != nil {
 		return false, fmt.Errorf("begin password reset: %w", err)
@@ -238,7 +245,7 @@ func (repository *Postgres) CreatePasswordReset(ctx context.Context, email strin
 	defer func() { _ = tx.Rollback(context.Background()) }()
 
 	var userID string
-	err = tx.QueryRow(ctx, "SELECT id FROM users WHERE email = $1 AND status <> 'disabled'", email).Scan(&userID)
+	err = tx.QueryRow(ctx, "SELECT id FROM users WHERE email = $1 AND status <> 'disabled'", params.Email).Scan(&userID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return false, nil
 	}
@@ -255,13 +262,29 @@ func (repository *Postgres) CreatePasswordReset(ctx context.Context, email strin
 	if _, err := tx.Exec(ctx, `
 		INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
 		VALUES ($1, $2, $3)
-	`, userID, tokenHash, expiresAt); err != nil {
+	`, userID, params.TokenHash, params.ExpiresAt); err != nil {
 		return false, fmt.Errorf("insert password reset token: %w", err)
+	}
+	if err := insertOutbox(ctx, tx, params.Notification); err != nil {
+		return false, err
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return false, fmt.Errorf("commit password reset: %w", err)
 	}
 	return true, nil
+}
+
+func insertOutbox(ctx context.Context, tx pgx.Tx, message *domain.EmailOutboxMessage) error {
+	if message == nil {
+		return nil
+	}
+	if _, err := tx.Exec(ctx, `
+		INSERT INTO email_outbox (recipient, kind, locale, payload_ciphertext, payload_nonce, expires_at)
+		VALUES ($1, $2, $3, $4, $5, $6)
+	`, message.Recipient, message.Kind, message.Locale, message.Ciphertext, message.Nonce, message.ExpiresAt); err != nil {
+		return fmt.Errorf("insert email outbox message: %w", err)
+	}
+	return nil
 }
 
 func (repository *Postgres) ResetPassword(ctx context.Context, tokenHash []byte, passwordHash string, now time.Time) error {

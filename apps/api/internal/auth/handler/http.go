@@ -2,11 +2,16 @@ package handler
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/creatoros/platform/apps/api/internal/auth/domain"
@@ -35,6 +40,17 @@ type Handler struct {
 	logger       *slog.Logger
 	environment  string
 	cookieSecure bool
+	limiter      RateLimiter
+}
+
+type RateLimiter interface {
+	Allow(context.Context, string, int64, time.Duration) (bool, time.Duration, error)
+}
+
+type Options struct {
+	Environment  string
+	CookieSecure bool
+	RateLimiter  RateLimiter
 }
 
 type dataResponse struct {
@@ -52,8 +68,11 @@ type errorResponse struct {
 	Error errorBody `json:"error"`
 }
 
-func New(service *service.Service, logger *slog.Logger, environment string, cookieSecure bool) *Handler {
-	return &Handler{service: service, logger: logger, environment: environment, cookieSecure: cookieSecure}
+func New(service *service.Service, logger *slog.Logger, options Options) *Handler {
+	return &Handler{
+		service: service, logger: logger, environment: options.Environment,
+		cookieSecure: options.CookieSecure, limiter: options.RateLimiter,
+	}
 }
 
 func (handler *Handler) Mount(router chi.Router) {
@@ -74,6 +93,9 @@ func (handler *Handler) Mount(router chi.Router) {
 }
 
 func (handler *Handler) register(response http.ResponseWriter, request *http.Request) {
+	if !handler.checkRateLimit(response, request, "register:network", requestIP(request), 100, time.Hour) {
+		return
+	}
 	var input struct {
 		Email           string `json:"email"`
 		Password        string `json:"password"`
@@ -83,6 +105,9 @@ func (handler *Handler) register(response http.ResponseWriter, request *http.Req
 	}
 	if err := decodeJSON(response, request, &input); err != nil {
 		writeError(response, http.StatusBadRequest, "invalid_request", "The request body is invalid.", nil)
+		return
+	}
+	if !handler.checkRateLimit(response, request, "register:account", strings.ToLower(strings.TrimSpace(input.Email)), 5, time.Hour) {
 		return
 	}
 
@@ -106,11 +131,17 @@ func (handler *Handler) register(response http.ResponseWriter, request *http.Req
 }
 
 func (handler *Handler) verifyEmail(response http.ResponseWriter, request *http.Request) {
+	if !handler.checkRateLimit(response, request, "verify:network", requestIP(request), 500, 10*time.Minute) {
+		return
+	}
 	var input struct {
 		Token string `json:"token"`
 	}
 	if err := decodeJSON(response, request, &input); err != nil {
 		writeError(response, http.StatusBadRequest, "invalid_request", "The request body is invalid.", nil)
+		return
+	}
+	if !handler.checkRateLimit(response, request, "verify:token", input.Token, 5, 10*time.Minute) {
 		return
 	}
 	user, err := handler.service.VerifyEmail(request.Context(), input.Token)
@@ -122,12 +153,18 @@ func (handler *Handler) verifyEmail(response http.ResponseWriter, request *http.
 }
 
 func (handler *Handler) login(response http.ResponseWriter, request *http.Request) {
+	if !handler.checkRateLimit(response, request, "login:network", requestIP(request), 500, 10*time.Minute) {
+		return
+	}
 	var input struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 	if err := decodeJSON(response, request, &input); err != nil {
 		writeError(response, http.StatusBadRequest, "invalid_request", "The request body is invalid.", nil)
+		return
+	}
+	if !handler.checkRateLimit(response, request, "login:account", strings.ToLower(strings.TrimSpace(input.Email)), 10, 10*time.Minute) {
 		return
 	}
 	result, err := handler.service.Login(request.Context(), input.Email, input.Password)
@@ -144,11 +181,17 @@ func (handler *Handler) login(response http.ResponseWriter, request *http.Reques
 }
 
 func (handler *Handler) forgotPassword(response http.ResponseWriter, request *http.Request) {
+	if !handler.checkRateLimit(response, request, "forgot:network", requestIP(request), 100, time.Hour) {
+		return
+	}
 	var input struct {
 		Email string `json:"email"`
 	}
 	if err := decodeJSON(response, request, &input); err != nil {
 		writeError(response, http.StatusBadRequest, "invalid_request", "The request body is invalid.", nil)
+		return
+	}
+	if !handler.checkRateLimit(response, request, "forgot:account", strings.ToLower(strings.TrimSpace(input.Email)), 5, time.Hour) {
 		return
 	}
 	result, err := handler.service.ForgotPassword(request.Context(), input.Email)
@@ -168,12 +211,18 @@ func (handler *Handler) forgotPassword(response http.ResponseWriter, request *ht
 }
 
 func (handler *Handler) resetPassword(response http.ResponseWriter, request *http.Request) {
+	if !handler.checkRateLimit(response, request, "reset:network", requestIP(request), 200, time.Hour) {
+		return
+	}
 	var input struct {
 		Token    string `json:"token"`
 		Password string `json:"password"`
 	}
 	if err := decodeJSON(response, request, &input); err != nil {
 		writeError(response, http.StatusBadRequest, "invalid_request", "The request body is invalid.", nil)
+		return
+	}
+	if !handler.checkRateLimit(response, request, "reset:token", input.Token, 5, time.Hour) {
 		return
 	}
 	if err := handler.service.ResetPassword(request.Context(), input.Token, input.Password); err != nil {
@@ -303,6 +352,33 @@ func (handler *Handler) exposesDevelopmentTokens() bool {
 
 func (handler *Handler) logInternal(request *http.Request, err error) {
 	handler.logger.Error("auth request failed", "method", request.Method, "path", request.URL.Path, "error", err)
+}
+
+func (handler *Handler) checkRateLimit(response http.ResponseWriter, request *http.Request, scope, identifier string, limit int64, window time.Duration) bool {
+	if handler.limiter == nil {
+		return true
+	}
+	digest := sha256.Sum256([]byte(identifier))
+	allowed, retryAfter, err := handler.limiter.Allow(request.Context(), fmt.Sprintf("%s:%x", scope, digest), limit, window)
+	if err != nil {
+		handler.logInternal(request, err)
+		writeError(response, http.StatusServiceUnavailable, "service_unavailable", "The authentication service is temporarily unavailable.", nil)
+		return false
+	}
+	if allowed {
+		return true
+	}
+	response.Header().Set("Retry-After", strconv.FormatInt(int64(retryAfter.Round(time.Second)/time.Second), 10))
+	writeError(response, http.StatusTooManyRequests, "rate_limited", "Too many requests. Try again later.", nil)
+	return false
+}
+
+func requestIP(request *http.Request) string {
+	host, _, err := net.SplitHostPort(request.RemoteAddr)
+	if err == nil {
+		return host
+	}
+	return request.RemoteAddr
 }
 
 func decodeJSON(response http.ResponseWriter, request *http.Request, target any) error {

@@ -3,6 +3,7 @@ package auth_test
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -17,6 +18,7 @@ import (
 	authservice "github.com/creatoros/platform/apps/api/internal/auth/service"
 	"github.com/creatoros/platform/apps/api/internal/platform/database"
 	platformhttp "github.com/creatoros/platform/apps/api/internal/platform/http"
+	"github.com/creatoros/platform/apps/api/internal/platform/notification"
 )
 
 type envelope struct {
@@ -38,32 +40,63 @@ func TestAuthenticationLifecycle(t *testing.T) {
 		t.Skip("TEST_DATABASE_URL is not configured")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancel()
 	pool, err := database.Open(ctx, databaseURL)
 	if err != nil {
 		t.Fatalf("open database: %v", err)
 	}
 	defer pool.Close()
-	if _, err := pool.Exec(ctx, "TRUNCATE users CASCADE"); err != nil {
+	lockConnection, err := pool.Acquire(ctx)
+	if err != nil {
+		t.Fatalf("acquire integration lock connection: %v", err)
+	}
+	if _, err := lockConnection.Exec(ctx, "SELECT pg_advisory_lock($1)", int64(772001)); err != nil {
+		lockConnection.Release()
+		t.Fatalf("acquire integration lock: %v", err)
+	}
+	defer func() {
+		_, _ = lockConnection.Exec(context.Background(), "SELECT pg_advisory_unlock($1)", int64(772001))
+		lockConnection.Release()
+	}()
+	if _, err := pool.Exec(ctx, "TRUNCATE users, email_outbox CASCADE"); err != nil {
 		t.Fatalf("truncate auth tables: %v", err)
 	}
-	t.Cleanup(func() {
+	defer func() {
 		cleanupContext, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
-		_, _ = pool.Exec(cleanupContext, "TRUNCATE users CASCADE")
-	})
+		_, _ = pool.Exec(cleanupContext, "TRUNCATE users, email_outbox CASCADE")
+	}()
 
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	repository := authrepository.NewPostgres(pool)
-	service := authservice.New(repository, authservice.DefaultConfig())
-	handler := authhandler.New(service, logger, "test", false)
+	notificationFactory, err := notification.NewFactory(
+		"https://creator.example",
+		base64.StdEncoding.EncodeToString(bytes.Repeat([]byte{9}, 32)),
+	)
+	if err != nil {
+		t.Fatalf("create notification factory: %v", err)
+	}
+	serviceConfig := authservice.DefaultConfig()
+	serviceConfig.Notifications = notificationFactory
+	service := authservice.New(repository, serviceConfig)
+	handler := authhandler.New(service, logger, authhandler.Options{Environment: "test", CookieSecure: false})
 	router := platformhttp.NewRouter(logger, platformhttp.Options{Auth: handler})
 
 	unauthorized := perform(t, router, http.MethodGet, "/api/v1/auth/me", nil, nil, nil)
 	assertStatus(t, unauthorized, http.StatusUnauthorized)
 
 	clientToken := register(t, router, "client@example.test", "client")
+	var verificationCiphertext []byte
+	if err := pool.QueryRow(ctx, `
+		SELECT payload_ciphertext FROM email_outbox
+		WHERE recipient = $1 AND kind = 'email_verification'
+	`, "client@example.test").Scan(&verificationCiphertext); err != nil {
+		t.Fatalf("query verification outbox: %v", err)
+	}
+	if bytes.Contains(verificationCiphertext, []byte(clientToken)) {
+		t.Fatal("verification outbox persisted the raw token")
+	}
 	unverifiedLogin := perform(t, router, http.MethodPost, "/api/v1/auth/login", map[string]any{
 		"email": "client@example.test", "password": "correct horse battery staple",
 	}, nil, nil)
@@ -132,6 +165,23 @@ func TestAuthenticationLifecycle(t *testing.T) {
 	creator := decodeUser(t, creatorLogin)
 	if len(creator.Roles) != 1 || creator.Roles[0] != "creator" {
 		t.Fatalf("expected creator role, got %#v", creator.Roles)
+	}
+
+	disabledToken := register(t, router, "disabled@example.test", "client")
+	if _, err := pool.Exec(ctx, "UPDATE users SET status = 'disabled' WHERE email = $1", "disabled@example.test"); err != nil {
+		t.Fatalf("disable pending account: %v", err)
+	}
+	disabledVerification := perform(t, router, http.MethodPost, "/api/v1/auth/verify-email", map[string]any{
+		"token": disabledToken,
+	}, nil, nil)
+	assertStatus(t, disabledVerification, http.StatusUnprocessableEntity)
+	var disabledStatus string
+	var disabledVerifiedAt *time.Time
+	if err := pool.QueryRow(ctx, "SELECT status, email_verified_at FROM users WHERE email = $1", "disabled@example.test").Scan(&disabledStatus, &disabledVerifiedAt); err != nil {
+		t.Fatalf("query disabled account: %v", err)
+	}
+	if disabledStatus != "disabled" || disabledVerifiedAt != nil {
+		t.Fatalf("verification changed disabled account: status=%q verified_at=%v", disabledStatus, disabledVerifiedAt)
 	}
 
 	logout := perform(t, router, http.MethodPost, "/api/v1/auth/logout", nil, cookies, map[string]string{

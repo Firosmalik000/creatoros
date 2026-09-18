@@ -27,6 +27,12 @@ type Config struct {
 	SessionTTL       time.Duration
 	VerificationTTL  time.Duration
 	PasswordResetTTL time.Duration
+	Notifications    NotificationFactory
+}
+
+type NotificationFactory interface {
+	Verification(email, locale, token string, expiresAt time.Time) (*domain.EmailOutboxMessage, error)
+	PasswordReset(email, locale, token string, expiresAt time.Time) (*domain.EmailOutboxMessage, error)
 }
 
 func DefaultConfig() Config {
@@ -89,6 +95,14 @@ func (service *Service) Register(ctx context.Context, input RegisterInput) (Regi
 	if err != nil {
 		return RegisterResult{}, err
 	}
+	verificationExpiresAt := service.now().Add(service.config.VerificationTTL)
+	var notification *domain.EmailOutboxMessage
+	if service.config.Notifications != nil {
+		notification, err = service.config.Notifications.Verification(email, locale, verificationToken, verificationExpiresAt)
+		if err != nil {
+			return RegisterResult{}, fmt.Errorf("create verification notification: %w", err)
+		}
+	}
 
 	user, err := service.repository.CreateUser(ctx, domain.CreateUserParams{
 		Email:                 email,
@@ -97,7 +111,8 @@ func (service *Service) Register(ctx context.Context, input RegisterInput) (Regi
 		PreferredLocale:       locale,
 		Role:                  role,
 		VerificationTokenHash: verificationHash,
-		VerificationExpiresAt: service.now().Add(service.config.VerificationTTL),
+		VerificationExpiresAt: verificationExpiresAt,
+		Notification:          notification,
 	})
 	if errors.Is(err, domain.ErrConflict) {
 		return RegisterResult{}, ErrEmailExists
@@ -211,7 +226,25 @@ func (service *Service) ForgotPassword(ctx context.Context, email string) (Forgo
 	if err != nil {
 		return ForgotPasswordResult{}, err
 	}
-	issued, err := service.repository.CreatePasswordReset(ctx, normalizedEmail, hash, service.now().Add(service.config.PasswordResetTTL))
+	locale := "id"
+	account, lookupErr := service.repository.FindAccountByEmail(ctx, normalizedEmail)
+	if lookupErr == nil && account.Status != "disabled" {
+		locale = account.PreferredLocale
+	} else if lookupErr != nil && !errors.Is(lookupErr, domain.ErrNotFound) {
+		return ForgotPasswordResult{}, fmt.Errorf("find password reset account: %w", lookupErr)
+	}
+	var notification *domain.EmailOutboxMessage
+	resetExpiresAt := service.now().Add(service.config.PasswordResetTTL)
+	if service.config.Notifications != nil && lookupErr == nil && account.Status != "disabled" {
+		notification, err = service.config.Notifications.PasswordReset(normalizedEmail, locale, token, resetExpiresAt)
+		if err != nil {
+			return ForgotPasswordResult{}, fmt.Errorf("create password reset notification: %w", err)
+		}
+	}
+	issued, err := service.repository.CreatePasswordReset(ctx, domain.CreatePasswordResetParams{
+		Email: normalizedEmail, TokenHash: hash,
+		ExpiresAt: resetExpiresAt, Notification: notification,
+	})
 	if err != nil {
 		return ForgotPasswordResult{}, fmt.Errorf("create password reset: %w", err)
 	}

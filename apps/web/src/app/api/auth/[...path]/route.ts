@@ -65,9 +65,12 @@ async function proxy(request: NextRequest, context: RouteContext) {
   const body =
     backendResponse.status === 204 ? null : await backendResponse.text();
   const response = new NextResponse(body, { status: backendResponse.status });
+  response.headers.set("Cache-Control", "no-store, private");
   const responseContentType = backendResponse.headers.get("content-type");
+  const retryAfter = backendResponse.headers.get("retry-after");
   if (responseContentType)
     response.headers.set("Content-Type", responseContentType);
+  if (retryAfter) response.headers.set("Retry-After", retryAfter);
   for (const setCookie of backendResponse.headers.getSetCookie()) {
     response.headers.append("Set-Cookie", setCookie);
   }

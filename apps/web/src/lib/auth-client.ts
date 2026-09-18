@@ -14,6 +14,7 @@ const knownAuthErrorCodes = new Set([
   "unauthenticated",
   "invalid_csrf",
   "service_unavailable",
+  "rate_limited",
   "internal_error",
   "unknown_error",
   "password_mismatch",

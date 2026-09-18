@@ -126,6 +126,7 @@
       "unauthenticated": "Session Anda tidak tersedia atau sudah berakhir. Silakan masuk kembali.",
       "invalid_csrf": "Permintaan keamanan kedaluwarsa. Muat ulang halaman dan coba lagi.",
       "service_unavailable": "Layanan autentikasi sedang tidak tersedia. Coba beberapa saat lagi.",
+      "rate_limited": "Terlalu banyak percobaan. Tunggu sebentar, lalu coba lagi.",
       "internal_error": "Permintaan belum dapat diselesaikan. Silakan coba lagi.",
       "unknown_error": "Terjadi kesalahan yang tidak dikenali. Silakan coba lagi.",
       "password_mismatch": "Konfirmasi password belum sama."

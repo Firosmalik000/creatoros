@@ -19,5 +19,7 @@ PostgreSQL is the system of record. Redis is used only for ephemeral concerns su
 - `email_verification_tokens` and `password_reset_tokens` store only token hashes and are one-time consumable.
 - Registration, role assignment, and verification-token creation are one transaction.
 - Password reset consumes the token, updates the password, and revokes every existing session in one transaction.
+- `email_outbox` durably stores encrypted verification/reset payloads; token issuance and enqueueing share one transaction, and payload bytes are cleared after delivery or expiry.
+- An `active` user must have `email_verified_at`; consuming a verification token cannot transition a disabled account.
 
 Migrations run through `cmd/migrate` and are serialized with a PostgreSQL advisory lock. Every `.up.sql` has a paired `.down.sql`; production rollback still requires an explicit data-impact review.

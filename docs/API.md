@@ -19,8 +19,10 @@ Successful business responses use `data` and optional `meta`. Errors use a stabl
 - `POST /api/v1/auth/reset-password`: update the password and revoke existing sessions.
 - `PATCH /api/v1/users/me/settings`: persist the authenticated user's locale; requires CSRF validation.
 
-Authentication uses the HttpOnly `creatoros_session` cookie. State-changing authenticated requests must also send `X-CSRF-Token` matching the session-bound `creatoros_csrf` cookie. Raw session and one-time tokens are never stored in PostgreSQL; only SHA-256 hashes are persisted.
+Authentication uses the HttpOnly `creatoros_session` cookie. State-changing authenticated requests must also send `X-CSRF-Token` matching the session-bound `creatoros_csrf` cookie. Raw session and one-time tokens are never stored in authentication tables; only SHA-256 hashes are persisted there. Production verification and reset links are queued atomically in a durable outbox whose payload is encrypted with AES-256-GCM.
 
-Email delivery is intentionally deferred to Phase 9. Local and test environments expose verification and reset tokens in response `meta` so the complete identity workflow can be exercised without a fake mail provider. Production responses never expose those tokens.
+Production requires a canonical HTTPS `PUBLIC_WEB_URL`, an outbox encryption key, and an SMTP STARTTLS relay. Registration and eligible password-reset requests queue localized email in the same transaction as the token. A worker retries failed delivery with capped exponential backoff. Local and test environments may omit email configuration and expose verification/reset tokens in response `meta`; production responses never expose them.
+
+Public auth endpoints are rate-limited in Redis by a hash of the network peer and by a hash of the relevant account/token identifier. Limits fail closed when Redis is unavailable and return `429` with `Retry-After` when exceeded. Deployments behind a BFF or reverse proxy must also enforce client-IP rate limits at the trusted edge because the API deliberately does not trust arbitrary forwarded-IP headers.
 
 Breaking changes require a new API version or an explicit compatibility plan.

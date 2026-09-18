@@ -58,15 +58,21 @@ paths:
               $ref: "#/components/schemas/RegisterRequest"
       responses:
         "201":
-          description: Account created. Local and test environments include a development verification token in meta.
+          description: Account created. Production queues a verification email; local and test environments include a development verification token in meta.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "409":
           $ref: "#/components/responses/EmailExists"
         "422":
           $ref: "#/components/responses/ValidationFailed"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /api/v1/auth/verify-email:
     post:
       operationId: verifyEmail
@@ -85,8 +91,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "422":
           $ref: "#/components/responses/InvalidToken"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /api/v1/auth/login:
     post:
       operationId: login
@@ -109,10 +121,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/InvalidCredentials"
         "403":
           $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /api/v1/auth/me:
     get:
       operationId: getCurrentUser
@@ -158,13 +176,19 @@ paths:
               $ref: "#/components/schemas/ForgotPasswordRequest"
       responses:
         "202":
-          description: Request accepted. Local and test environments may include a development reset token in meta.
+          description: Request accepted. Production queues email for eligible accounts; local and test environments may include a development reset token in meta.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/AcceptedResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "422":
           $ref: "#/components/responses/ValidationFailed"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /api/v1/auth/reset-password:
     post:
       operationId: resetPassword
@@ -179,8 +203,14 @@ paths:
       responses:
         "204":
           description: Password updated and existing sessions revoked.
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "422":
-          $ref: "#/components/responses/InvalidToken"
+          $ref: "#/components/responses/UnprocessableAuthRequest"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /api/v1/users/me/settings:
     patch:
       operationId: updateCurrentUserSettings
@@ -224,6 +254,12 @@ components:
       schema:
         type: string
   responses:
+    BadRequest:
+      description: The JSON body is malformed, too large, contains unknown fields, or is not a single object.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
     ValidationFailed:
       description: One or more request fields are invalid.
       content:
@@ -238,6 +274,30 @@ components:
             $ref: "#/components/schemas/ErrorResponse"
     InvalidToken:
       description: The one-time token is invalid, expired, or already consumed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    UnprocessableAuthRequest:
+      description: The one-time token is invalid or the new password does not satisfy validation rules.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    RateLimited:
+      description: The network or account-scoped authentication rate limit was exceeded.
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+            minimum: 1
+          description: Seconds until the current limit window expires.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ServiceUnavailable:
+      description: A required authentication dependency is unavailable.
       content:
         application/json:
           schema:

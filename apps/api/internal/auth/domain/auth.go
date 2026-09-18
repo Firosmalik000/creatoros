@@ -47,6 +47,23 @@ type CreateUserParams struct {
 	Role                  string
 	VerificationTokenHash []byte
 	VerificationExpiresAt time.Time
+	Notification          *EmailOutboxMessage
+}
+
+type EmailOutboxMessage struct {
+	Recipient  string
+	Kind       string
+	Locale     string
+	Ciphertext []byte
+	Nonce      []byte
+	ExpiresAt  time.Time
+}
+
+type CreatePasswordResetParams struct {
+	Email        string
+	TokenHash    []byte
+	ExpiresAt    time.Time
+	Notification *EmailOutboxMessage
 }
 
 type Repository interface {
@@ -56,7 +73,7 @@ type Repository interface {
 	CreateSession(context.Context, string, []byte, []byte, time.Time) (Session, error)
 	FindSession(context.Context, []byte, time.Time) (Session, error)
 	RevokeSession(context.Context, []byte, time.Time) error
-	CreatePasswordReset(context.Context, string, []byte, time.Time) (bool, error)
+	CreatePasswordReset(context.Context, CreatePasswordResetParams) (bool, error)
 	ResetPassword(context.Context, []byte, string, time.Time) error
 	UpdateSettings(context.Context, string, string, time.Time) (User, error)
 }

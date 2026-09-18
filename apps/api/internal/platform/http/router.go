@@ -34,7 +34,6 @@ func NewRouter(logger *slog.Logger, optionValues ...Options) http.Handler {
 	}
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
-	router.Use(middleware.RealIP)
 	router.Use(middleware.Recoverer)
 	router.Use(requestLogger(logger))
 	if len(options.AllowedOrigins) > 0 {

@@ -126,6 +126,7 @@
       "unauthenticated": "Sesi anda tiada atau telah tamat. Sila log masuk semula.",
       "invalid_csrf": "Permintaan keselamatan tamat tempoh. Muat semula halaman dan cuba lagi.",
       "service_unavailable": "Pengesahan tidak tersedia buat sementara. Cuba sebentar lagi.",
+      "rate_limited": "Terlalu banyak percubaan. Tunggu sebentar, kemudian cuba lagi.",
       "internal_error": "Permintaan belum dapat diselesaikan. Sila cuba lagi.",
       "unknown_error": "Ralat yang tidak diketahui berlaku. Sila cuba lagi.",
       "password_mismatch": "Pengesahan kata laluan tidak sepadan."

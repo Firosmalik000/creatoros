@@ -36,6 +36,8 @@ Ports are configurable through `.env`. Defaults are web `3000`, API `8080`, MinI
 
 Phase 1 authentication pages are available under `/{locale}/auth/register` and `/{locale}/auth/login`; authenticated account settings live at `/{locale}/settings`. Docker Compose runs versioned migrations before starting the API.
 
+Production auth additionally requires Redis, `PUBLIC_WEB_URL`, `OUTBOX_ENCRYPTION_KEY`, and an SMTP STARTTLS relay. See `.env.example` and `docs/SECURITY.md`; startup fails closed when production cookie or email delivery settings are unsafe or incomplete.
+
 ## Quality commands
 
 ```bash
