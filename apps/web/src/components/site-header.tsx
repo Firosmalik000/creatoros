@@ -41,12 +41,15 @@ export function SiteHeader({
         </nav>
         <div className="header-actions">
           <LocaleSwitcher locale={locale} label={labels.language} />
-          <Link className="text-link desktop-only" href={`/${locale}#login`}>
+          <Link
+            className="text-link desktop-only"
+            href={`/${locale}/auth/login`}
+          >
             {labels.login}
           </Link>
           <Link
             className="button button--dark desktop-only"
-            href={`/${locale}#start`}
+            href={`/${locale}/auth/register`}
           >
             {labels.start}
             <ArrowUpRight aria-hidden="true" size={17} />

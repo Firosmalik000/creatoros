@@ -48,6 +48,7 @@ services:
       retries: 10
 
   api:
+    image: creatoros-api:local
     build:
       context: .
       dockerfile: infra/docker/api.Dockerfile
@@ -55,14 +56,30 @@ services:
       APP_ENV: local
       API_PORT: 8080
       DATABASE_URL: ${DATABASE_URL:-postgres://creatoros:creatoros_local_only@postgres:5432/creatoros?sslmode=disable}
+      WEB_ORIGINS: ${WEB_ORIGINS:-http://localhost:3000,http://localhost:3001}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       S3_ENDPOINT: ${S3_ENDPOINT:-http://minio:9000}
     ports:
       - "8080:8080"
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+
+  migrate:
+    image: creatoros-api:local
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    entrypoint: ["/creatoros-migrate", "-dir", "/migrations"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://creatoros:creatoros_local_only@postgres:5432/creatoros?sslmode=disable}
+    depends_on:
+      postgres:
         condition: service_healthy
 
   web:

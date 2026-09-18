@@ -11,4 +11,5 @@ bin/
 .idea/
 .vscode/
 .impeccable/review/
+.playwright-cli/
 apps/api/tmp/

@@ -34,6 +34,8 @@ Without Docker, run the web app with `npm run dev:web`. The API requires Go 1.27
 
 Ports are configurable through `.env`. Defaults are web `3000`, API `8080`, MinIO API `9000`, and MinIO Console `9002`. On this workstation, the ignored local `.env` uses web port `3001` because port `3000` is already occupied by another project.
 
+Phase 1 authentication pages are available under `/{locale}/auth/register` and `/{locale}/auth/login`; authenticated account settings live at `/{locale}/settings`. Docker Compose runs versioned migrations before starting the API.
+
 ## Quality commands
 
 ```bash

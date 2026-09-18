@@ -20,7 +20,7 @@ Before implementation, read `README.md`, `PRODUCT.md`, `DESIGN.md`, `docs/ROADMA
 `docs/ROADMAP.md` is the detailed source of truth. Never mark a phase complete until every exit gate has recent verification evidence in its evidence log.
 
 - [x] Phase 0 — Foundation (verified 2026-09-15; evidence in `docs/ROADMAP.md`)
-- [ ] Phase 1 — Auth & User
+- [x] Phase 1 — Auth & User (verified 2026-09-18; evidence in `docs/ROADMAP.md`)
 - [ ] Phase 2 — Creator Foundation
 - [ ] Phase 3 — Marketplace
 - [ ] Phase 4 — Services

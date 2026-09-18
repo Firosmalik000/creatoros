@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-18T01:33:28.0108578Z",
+  "title": "Design System: CreatorOS",
+  "extensions": {
+    "colorMeta": {
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Warm Ivory Canvas",
+        "canonical": "#f4f0e7",
+        "tonalRamp": [
+          "#292720",
+          "#514d43",
+          "#797367",
+          "#a29c8d",
+          "#c9c3b5",
+          "#ddd8cc",
+          "#eeeae2",
+          "#faf8f3"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Decisive Ink",
+        "canonical": "#161714",
+        "tonalRamp": [
+          "#0c0d0b",
+          "#161714",
+          "#30312d",
+          "#54564f",
+          "#7c7e76",
+          "#a8aaa3",
+          "#d3d4d0",
+          "#f1f2ef"
+        ]
+      },
+      "signal": {
+        "role": "primary",
+        "displayName": "Agency Coral",
+        "canonical": "#ff6b4a",
+        "tonalRamp": [
+          "#35150e",
+          "#66291c",
+          "#983e2b",
+          "#c95339",
+          "#ff6b4a",
+          "#ff9c84",
+          "#ffc7b8",
+          "#fff0eb"
+        ]
+      },
+      "fresh": {
+        "role": "secondary",
+        "displayName": "Fresh Lime",
+        "canonical": "#c8f25b",
+        "tonalRamp": [
+          "#25300b",
+          "#4b6017",
+          "#729024",
+          "#99bd37",
+          "#c8f25b",
+          "#d9f783",
+          "#e8faae",
+          "#f7fde5"
+        ]
+      },
+      "cool": {
+        "role": "tertiary",
+        "displayName": "Contact-Sheet Cornflower",
+        "canonical": "#7d9cff",
+        "tonalRamp": [
+          "#111a38",
+          "#25366e",
+          "#3e55a4",
+          "#5b75d3",
+          "#7d9cff",
+          "#a8bcff",
+          "#d0dbff",
+          "#f0f4ff"
+        ]
+      },
+      "success-surface": {
+        "role": "semantic",
+        "displayName": "Success Paper",
+        "canonical": "#d8eee2",
+        "tonalRamp": [
+          "#183126",
+          "#305d49",
+          "#4f896d",
+          "#79ad91",
+          "#a5d0b8",
+          "#d8eee2",
+          "#e8f6ef",
+          "#f6fcf9"
+        ]
+      },
+      "danger-surface": {
+        "role": "semantic",
+        "displayName": "Error Paper",
+        "canonical": "#f2d8d3",
+        "tonalRamp": [
+          "#351b17",
+          "#64342d",
+          "#914f46",
+          "#bc7469",
+          "#dca69d",
+          "#f2d8d3",
+          "#faeae7",
+          "#fff7f5"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Decisive Display",
+        "purpose": "Large persuasive and authentication headings."
+      },
+      "editorial": {
+        "displayName": "Editorial Countervoice",
+        "purpose": "Selective phrases, workflow titles, niches, and settings headings."
+      },
+      "body": {
+        "displayName": "Interface Body",
+        "purpose": "Readable copy, forms, controls, and data."
+      },
+      "label": {
+        "displayName": "Production Label",
+        "purpose": "Compact annotations, field labels, indexes, and metrics."
+      }
+    },
+    "shadows": [
+      {
+        "name": "editorial-float",
+        "value": "0 18px 50px rgba(42, 35, 24, 0.14), 0 3px 10px rgba(42, 35, 24, 0.08)",
+        "purpose": "Large creator imagery and elevated editorial surfaces."
+      },
+      {
+        "name": "proof-note",
+        "value": "0 14px 34px rgba(0, 0, 0, 0.22)",
+        "purpose": "Agency-proof annotation over auth photography."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-transition",
+        "value": "180ms ease",
+        "purpose": "Buttons, links, and compact control feedback."
+      },
+      {
+        "name": "contact-reveal",
+        "value": "900ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Signature creator contact-sheet entrance."
+      },
+      {
+        "name": "pending-spin",
+        "value": "900ms linear infinite",
+        "purpose": "Pending form actions."
+      },
+      {
+        "name": "skeleton-pulse",
+        "value": "1.2s ease-in-out infinite alternate",
+        "purpose": "Localized route and form loading placeholders."
+      }
+    ],
+    "breakpoints": [
+      { "name": "navigation", "value": "1080px" },
+      { "name": "tablet", "value": "820px" },
+      { "name": "mobile", "value": "560px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Signal Button",
+      "kind": "button",
+      "refersTo": "button-signal",
+      "description": "Primary form and journey action with compact, tactile lift.",
+      "html": "<button class=\"ds-btn-signal\">Save changes</button>",
+      "css": ".ds-btn-signal { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 11px 20px; border: 1px solid transparent; border-radius: 999px; background: var(--primary); color: var(--foreground); font-weight: 760; transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease; } .ds-btn-signal:hover { background: var(--primary-hover); color: white; transform: translateY(-2px); } .ds-btn-signal:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; box-shadow: 0 0 0 5px var(--background); } .ds-btn-signal:disabled { cursor: wait; opacity: 0.62; transform: none; }"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "description": "Secondary operational action that stays subordinate to the primary task.",
+      "html": "<button class=\"ds-btn-quiet\">Log out</button>",
+      "css": ".ds-btn-quiet { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; padding: 11px 20px; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--foreground); font-weight: 760; transition: background 180ms ease, transform 180ms ease; } .ds-btn-quiet:hover { background: var(--surface); transform: translateY(-2px); } .ds-btn-quiet:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; box-shadow: 0 0 0 5px var(--background); }"
+    },
+    {
+      "name": "Form Field",
+      "kind": "input",
+      "refersTo": "form-field",
+      "description": "Explicit label, cream control, and optional helper copy for operational forms.",
+      "html": "<label class=\"ds-field\"><span>Email</span><input type=\"email\" autocomplete=\"email\"><small>Use your work email.</small></label>",
+      "css": ".ds-field { display: grid; gap: 8px; color: var(--foreground); } .ds-field > span { font-size: 0.76rem; font-weight: 780; letter-spacing: 0.03em; } .ds-field input { width: 100%; min-height: 50px; padding: 11px 14px; border: 1px solid #9f988b; border-radius: var(--radius-sm); background: var(--surface); color: var(--foreground); caret-color: var(--primary-hover); } .ds-field input:hover { border-color: var(--border); } .ds-field input:focus-visible { border-color: var(--primary-hover); outline: 3px solid var(--focus); outline-offset: 3px; box-shadow: 0 0 0 5px var(--background); } .ds-field small { color: #6c695f; font-size: 0.74rem; }"
+    },
+    {
+      "name": "Selected Role Choice",
+      "kind": "custom",
+      "description": "Keyboard-accessible account-type radio card with unmistakable selected state.",
+      "html": "<label class=\"ds-role\"><input type=\"radio\" name=\"role\" checked><span><strong>Creator</strong><small>Offer content services.</small></span></label>",
+      "css": ".ds-role { position: relative; display: block; cursor: pointer; } .ds-role input { position: absolute; opacity: 0; pointer-events: none; } .ds-role span { min-height: 92px; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 14px; border: 1px solid #9f988b; border-radius: var(--radius-sm); background: rgba(255, 253, 247, 0.5); } .ds-role input:checked + span { border-color: var(--foreground); background: var(--fresh); } .ds-role input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 3px; box-shadow: 0 0 0 5px var(--background); } .ds-role small { color: #6c695f; font-size: 0.74rem; }"
+    },
+    {
+      "name": "Error Status",
+      "kind": "custom",
+      "refersTo": "status-error",
+      "description": "Localized, adjacent error feedback with icon and recovery copy.",
+      "html": "<div class=\"ds-status-error\" role=\"status\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" width=\"19\" height=\"19\"><circle cx=\"12\" cy=\"12\" r=\"9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M12 7v6m0 4h.01\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg><span>Check the highlighted information and try again.</span></div>",
+      "css": ".ds-status-error { display: grid; grid-template-columns: 22px 1fr; gap: 10px; padding: 14px; border-radius: var(--radius-sm); background: #f2d8d3; color: #6e211c; font-size: 0.84rem; } .ds-status-error svg { margin-top: 2px; }"
+    },
+    {
+      "name": "Success Status",
+      "kind": "custom",
+      "refersTo": "status-success",
+      "description": "Localized confirmation that keeps the next action close.",
+      "html": "<div class=\"ds-status-success\" role=\"status\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" width=\"19\" height=\"19\"><circle cx=\"12\" cy=\"12\" r=\"9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"m8 12 2.5 2.5L16 9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg><span>Your changes were saved.</span></div>",
+      "css": ".ds-status-success { display: grid; grid-template-columns: 22px 1fr; gap: 10px; padding: 14px; border-radius: var(--radius-sm); background: #d8eee2; color: #17553d; font-size: 0.84rem; } .ds-status-success svg { margin-top: 2px; }"
+    },
+    {
+      "name": "Account Summary",
+      "kind": "card",
+      "description": "Quiet operational identity card with monogram and account facts.",
+      "html": "<section class=\"ds-account\"><div class=\"ds-account-mark\">A</div><h2>Alya Pratama</h2><p>alya@example.com</p><dl><div><dt>Role</dt><dd>creator</dd></div><div><dt>Permissions</dt><dd>3</dd></div></dl></section>",
+      "css": ".ds-account { padding: 28px; border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--surface); color: var(--foreground); } .ds-account-mark { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 50%; background: var(--cool); font-size: 1.3rem; font-weight: 800; } .ds-account h2 { margin: 20px 0 0; font-size: 1.4rem; } .ds-account p { margin: 0; color: #6c695f; overflow-wrap: anywhere; } .ds-account dl { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 26px 0 0; padding-top: 20px; border-top: 1px solid var(--border-soft); } .ds-account dt { color: #777368; font-size: 0.68rem; font-weight: 720; text-transform: uppercase; } .ds-account dd { margin: 3px 0 0; font-size: 0.92rem; font-weight: 760; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Southeast Asian Talent Contact Sheet",
+    "overview": "CreatorOS should feel curated by a sharp creative agency: warm paper-like surfaces, decisive ink typography, authored creator photography, production annotations, and a few high-energy signals. The visual hierarchy sells a managed marketplace through talent and process rather than resembling corporate procurement software or an open gig bazaar. Operational surfaces extend the same world in Operate mode: task completion and state clarity lead, while brand character comes from editorial headings, warm materials, creator proof imagery, and precise accent use. Authentication and account settings must feel trustworthy and calm rather than decorative or conversion-heavy.",
+    "keyCharacteristics": [
+      "editorial type-and-image tension",
+      "documentary creator work",
+      "generous public-page rhythm",
+      "compact agency annotations",
+      "visible, human quality-control cues"
+    ],
+    "rules": [],
+    "dos": [
+      "Do keep coral focus rings visible with an ivory separator, semantic controls, a skip link, localized alternative text, and WCAG 2.2 AA contrast.",
+      "Do respect prefers-reduced-motion; the contact-sheet reveal and all transitions must resolve immediately for reduced-motion users.",
+      "Do use translation keys for interface copy and locale-aware formatting; keep illustrative claims clearly labeled.",
+      "Do preserve the contact-sheet reveal as the signature motion: a short settle, slight desaturation-to-color shift, and restrained easing.",
+      "Do keep auth and settings task-first, with semantic labels, fieldsets, status regions, disabled pending controls, and explicit recovery paths.",
+      "Do hide auth and settings routes from indexing and keep creator imagery subordinate to the form below tablet width."
+    ],
+    "donts": [
+      "Don't replace the editorial composition with a generic grid of same-sized feature cards, gradients, glassmorphism, or playful decoration.",
+      "Don't let accent colors compete with creator photography or use semantic colors decoratively.",
+      "Don't crop out the three-subject story, hide a primary path, or introduce horizontal scrolling on small screens.",
+      "Don't ship an indexable public page without localized title and description, canonical, language alternates, social metadata, and appropriate structured data.",
+      "Don't use placeholder-only fields, color-only role selection, raw API errors, or silent loading and save states.",
+      "Don't retain the desktop image split on mobile when it delays access to the primary task."
+    ]
+  }
+}

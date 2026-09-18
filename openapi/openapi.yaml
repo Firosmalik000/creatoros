@@ -1,11 +1,19 @@
 openapi: 3.1.0
 info:
   title: CreatorOS API
-  version: 0.1.0
+  version: 0.2.0
   description: REST contract for the CreatorOS modular monolith.
 servers:
   - url: http://localhost:8080
     description: Local API
+security: []
+tags:
+  - name: Health
+    description: Process and dependency health checks.
+  - name: Authentication
+    description: Account registration, verification, sessions, and password recovery.
+  - name: Users
+    description: Authenticated user profile and preference operations.
 paths:
   /health/live:
     get:
@@ -22,16 +30,242 @@ paths:
   /health/ready:
     get:
       operationId: getReadiness
-      summary: Check whether the API is ready to receive traffic
+      summary: Check whether the API and database are ready
       tags: [Health]
       responses:
         "200":
-          description: The API is ready.
+          description: The API and database are ready.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: A required dependency is unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /api/v1/auth/register:
+    post:
+      operationId: registerUser
+      summary: Register a client or creator account
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Account created. Local and test environments include a development verification token in meta.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "409":
+          $ref: "#/components/responses/EmailExists"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/auth/verify-email:
+    post:
+      operationId: verifyEmail
+      summary: Verify a registered email address
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenRequest"
+      responses:
+        "200":
+          description: Email verified.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "422":
+          $ref: "#/components/responses/InvalidToken"
+  /api/v1/auth/login:
+    post:
+      operationId: login
+      summary: Create a cookie-backed user session
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Authenticated. Sets HttpOnly session and CSRF cookies.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          $ref: "#/components/responses/InvalidCredentials"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/auth/me:
+    get:
+      operationId: getCurrentUser
+      summary: Return the authenticated user
+      tags: [Authentication]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Current user.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+  /api/v1/auth/logout:
+    post:
+      operationId: logout
+      summary: Revoke the current session
+      tags: [Authentication]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Session revoked and cookies cleared.
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+  /api/v1/auth/forgot-password:
+    post:
+      operationId: forgotPassword
+      summary: Request a password reset without revealing account existence
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "202":
+          description: Request accepted. Local and test environments may include a development reset token in meta.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcceptedResponse"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/auth/reset-password:
+    post:
+      operationId: resetPassword
+      summary: Set a new password and revoke existing sessions
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "204":
+          description: Password updated and existing sessions revoked.
+        "422":
+          $ref: "#/components/responses/InvalidToken"
+  /api/v1/users/me/settings:
+    patch:
+      operationId: updateCurrentUserSettings
+      summary: Update authenticated user settings
+      tags: [Users]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSettingsRequest"
+      responses:
+        "200":
+          description: Settings updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
 components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: creatoros_session
+  parameters:
+    CSRFToken:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      description: Must match the creatoros_csrf cookie bound to the current session.
+      schema:
+        type: string
+  responses:
+    ValidationFailed:
+      description: One or more request fields are invalid.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    EmailExists:
+      description: The normalized email is already registered.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InvalidToken:
+      description: The one-time token is invalid, expired, or already consumed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InvalidCredentials:
+      description: The credentials are invalid.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: The account cannot perform this action.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthenticated:
+      description: A valid active session is required.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InvalidCSRF:
+      description: The CSRF cookie and header are missing, different, or not bound to the session.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
   schemas:
     HealthResponse:
       type: object
@@ -43,7 +277,166 @@ components:
           properties:
             status:
               type: string
-              enum: [live, ready]
+              enum: [live, ready, not_ready]
             timestamp:
               type: string
               format: date-time
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password, display_name, preferred_locale, role]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        password:
+          type: string
+          format: password
+          minLength: 12
+          maxLength: 128
+        display_name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        preferred_locale:
+          $ref: "#/components/schemas/Locale"
+        role:
+          type: string
+          enum: [client, creator]
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    TokenRequest:
+      type: object
+      additionalProperties: false
+      required: [token]
+      properties:
+        token:
+          type: string
+          minLength: 1
+    ForgotPasswordRequest:
+      type: object
+      additionalProperties: false
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+    ResetPasswordRequest:
+      type: object
+      additionalProperties: false
+      required: [token, password]
+      properties:
+        token:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          format: password
+          minLength: 12
+          maxLength: 128
+    UpdateSettingsRequest:
+      type: object
+      additionalProperties: false
+      required: [preferred_locale]
+      properties:
+        preferred_locale:
+          $ref: "#/components/schemas/Locale"
+    Locale:
+      type: string
+      enum: [id, en, ms]
+    User:
+      type: object
+      required:
+        [
+          id,
+          email,
+          display_name,
+          preferred_locale,
+          status,
+          roles,
+          permissions,
+          created_at,
+          updated_at,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        display_name:
+          type: string
+        preferred_locale:
+          $ref: "#/components/schemas/Locale"
+        status:
+          type: string
+          enum: [pending_verification, active, disabled]
+        email_verified_at:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: "null"
+        roles:
+          type: array
+          items:
+            type: string
+        permissions:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    UserResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/User"
+        meta:
+          type: object
+          additionalProperties:
+            type: string
+    AcceptedResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [accepted]
+          properties:
+            accepted:
+              type: boolean
+        meta:
+          type: object
+          additionalProperties:
+            type: string
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+              additionalProperties: true

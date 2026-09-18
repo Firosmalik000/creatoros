@@ -53,27 +53,27 @@ Tidak membangun fitur marketplace sebelum seluruh exit gate Phase 0 lulus.
 
 ## Phase 1 — Auth & User
 
-**Status:** PLANNED
+**Status:** COMPLETE (verified 2026-09-18)
 
 ### Build
 
-- [ ] Register
-- [ ] Login
-- [ ] Logout
-- [ ] Email/account verification
-- [ ] Forgot/reset password
-- [ ] Roles
-- [ ] Permissions
-- [ ] User settings
-- [ ] Language selection and persistence
+- [x] Register
+- [x] Login
+- [x] Logout
+- [x] Email/account verification
+- [x] Forgot/reset password
+- [x] Roles
+- [x] Permissions
+- [x] User settings
+- [x] Language selection and persistence
 
 ### Exit gate
 
-- [ ] Client can register and log in
-- [ ] Creator can register and log in
-- [ ] Unauthorized routes are protected by the backend
-- [ ] Language persistence works
-- [ ] End-to-end authentication tests pass
+- [x] Client can register and log in
+- [x] Creator can register and log in
+- [x] Unauthorized routes are protected by the backend
+- [x] Language persistence works
+- [x] End-to-end authentication tests pass
 
 ## Phase 2 — Creator Foundation
 
@@ -363,10 +363,16 @@ Do not open the marketplace to thousands of users before the controlled pilot pa
 
 Add dated evidence here whenever a phase is completed.
 
-| Date       | Phase                        | Evidence                                                                                                                                                                                   | Result |
-| ---------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| 2026-09-15 | Phase 0 web foundation       | `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build`; localized browser routes and public SEO endpoints checked                                    | PASS   |
-| 2026-09-15 | Phase 0 Go toolchain         | Go 1.27.1 installed on User `PATH`; `go vet ./...`, `go test ./...`, and `go build -buildvcs=false -o ./bin/creatoros-api.exe ./cmd/server`                                                | PASS   |
-| 2026-09-15 | Phase 0 race detection       | `go test -race ./...` in ephemeral `golang:1.27-alpine` Linux container with build toolchain                                                                                               | PASS   |
-| 2026-09-15 | Phase 0 Docker stack         | Docker Desktop 4.91.0 / Engine 29.8.0 / Compose 5.5.1; `docker compose up --build -d`; PostgreSQL, Redis, and MinIO healthy; API live/ready, web `/id`, and MinIO health returned HTTP 200 | PASS   |
-| 2026-09-15 | Phase 0 service connectivity | Web container fetched Go API `/health/ready` through the configured internal Docker host and received HTTP 200                                                                             | PASS   |
+| Date       | Phase                        | Evidence                                                                                                                                                                                                                                                    | Result |
+| ---------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 2026-09-15 | Phase 0 web foundation       | `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build`; localized browser routes and public SEO endpoints checked                                                                                                     | PASS   |
+| 2026-09-15 | Phase 0 Go toolchain         | Go 1.27.1 installed on User `PATH`; `go vet ./...`, `go test ./...`, and `go build -buildvcs=false -o ./bin/creatoros-api.exe ./cmd/server`                                                                                                                 | PASS   |
+| 2026-09-15 | Phase 0 race detection       | `go test -race ./...` in ephemeral `golang:1.27-alpine` Linux container with build toolchain                                                                                                                                                                | PASS   |
+| 2026-09-15 | Phase 0 Docker stack         | Docker Desktop 4.91.0 / Engine 29.8.0 / Compose 5.5.1; `docker compose up --build -d`; PostgreSQL, Redis, and MinIO healthy; API live/ready, web `/id`, and MinIO health returned HTTP 200                                                                  | PASS   |
+| 2026-09-15 | Phase 0 service connectivity | Web container fetched Go API `/health/ready` through the configured internal Docker host and received HTTP 200                                                                                                                                              | PASS   |
+| 2026-09-18 | Phase 1 auth lifecycle       | Integration lifecycle covers client/creator registration, one-time verification, login, protected `me`, CSRF rejection, locale persistence, forgot/reset password, session revocation, and logout; `go test ./...` passed against isolated `creatoros_test` | PASS   |
+| 2026-09-18 | Phase 1 race detection       | `go test -race ./...` passed in the official `golang:1.27` Linux container against isolated `creatoros_test`                                                                                                                                                | PASS   |
+| 2026-09-18 | Phase 1 migrations           | Migration `000002_auth_and_users` applied, rolled back one step, and reapplied successfully on isolated `creatoros_test`; Compose migration job also exited successfully                                                                                    | PASS   |
+| 2026-09-18 | Phase 1 web and UX           | `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm run test`, and `npm run build`; 29 localized routes built; register-to-logout browser flow and desktop/mobile review passed; Impeccable finish review approved                            | PASS   |
+| 2026-09-18 | Phase 1 API contract         | Redocly validated `openapi/openapi.yaml`; explicit public/default and cookie-auth security contracts documented                                                                                                                                             | PASS   |
+| 2026-09-18 | Phase 1 local stack          | Docker Compose rebuilt after local Docker recovery; PostgreSQL, Redis, and MinIO healthy; API `/health/ready` and web `/id/auth/register` returned HTTP 200                                                                                                 | PASS   |

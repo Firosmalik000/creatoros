@@ -1,4 +1,4 @@
-.PHONY: setup dev dev-web dev-api lint typecheck test build migrate seed
+.PHONY: setup dev dev-web dev-api lint typecheck test build migrate migrate-down seed
 
 setup:
 	npm install
@@ -28,7 +28,10 @@ build:
 	cd apps/api && go build ./cmd/server
 
 migrate:
-	@echo "Run versioned migrations with the deployment migration runner."
+	cd apps/api && go run ./cmd/migrate -dir ./migrations
+
+migrate-down:
+	cd apps/api && go run ./cmd/migrate -direction down -steps 1 -dir ./migrations
 
 seed:
 	@echo "Seed data will be introduced with the first persistence-backed module."
