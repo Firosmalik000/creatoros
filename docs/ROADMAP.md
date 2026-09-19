@@ -77,24 +77,32 @@ Tidak membangun fitur marketplace sebelum seluruh exit gate Phase 0 lulus.
 
 ## Phase 2 — Creator Foundation
 
-**Status:** PLANNED
+**Status:** COMPLETE (verified 2026-09-19)
 
 ### Build
 
-- [ ] Creator onboarding
-- [ ] Creator profile
-- [ ] Social platforms
-- [ ] Categories
-- [ ] Portfolio
-- [ ] Creator verification
-- [ ] Public creator profile
+- [x] Creator onboarding
+- [x] Creator profile
+- [x] Social platforms
+- [x] Categories
+- [x] Portfolio
+- [x] Creator verification
+- [x] Public creator profile
 
 ### Exit gate
 
-- [ ] Admin can approve a creator
-- [ ] Verified creators appear publicly
-- [ ] Non-verified creators never appear publicly
-- [ ] Public profile SEO metadata is valid
+- [x] Admin can approve a creator
+- [x] Verified creators appear publicly
+- [x] Non-verified creators never appear publicly
+- [x] Public profile SEO metadata is valid
+
+### Evidence log
+
+- 2026-09-19: Migration `000004_creator_foundation` applied and down/up rollback smoke test passed against PostgreSQL; seeded platform/category catalog verified.
+- 2026-09-19: Go creator integration tests passed for verification visibility and atomic invalid-reference rollback; auth, creator, config, HTTP, notification, and rate-limit package tests passed; `go vet ./...`, API build, and named race-container package runs passed.
+- 2026-09-19: Browser E2E passed with local creator/admin accounts: onboarding draft saved, complete submission entered the review queue, admin approval published the profile, and `/id/creators/naufal-tech` rendered the verified public profile with portfolio/social evidence. The non-verified visibility rule is covered by the creator integration test.
+- 2026-09-19: Public profile metadata implementation verified in page source: localized title/description, canonical, hreflang, Open Graph profile fields, `ProfilePage`/`Person` JSON-LD, robots index, responsive layout, and accessible skip/navigation labels.
+- 2026-09-19: OpenAPI 0.3.0 lint passed with only the four pre-existing repository warnings; Docker Compose API/web rebuild and health checks passed. Frontend locale tests, formatting, lint, typecheck, production build, and UI detector review were previously green; country selection regression was fixed and rechecked through the browser flow.
 
 ## Phase 3 — Marketplace
 

@@ -36,6 +36,8 @@ Ports are configurable through `.env`. Defaults are web `3000`, API `8080`, MinI
 
 Phase 1 authentication pages are available under `/{locale}/auth/register` and `/{locale}/auth/login`; authenticated account settings live at `/{locale}/settings`. Docker Compose runs versioned migrations before starting the API.
 
+Phase 2 creator onboarding is available at `/{locale}/creator/onboarding`; agency reviewers use `/{locale}/admin/creator-verifications`. Approved creators receive an indexable public profile at `/{locale}/creators/{slug}`. Local admin access must be assigned directly in the database or through a controlled seed because public registration never grants the `admin` role.
+
 Production auth additionally requires Redis, `PUBLIC_WEB_URL`, `OUTBOX_ENCRYPTION_KEY`, and an SMTP STARTTLS relay. See `.env.example` and `docs/SECURITY.md`; startup fails closed when production cookie or email delivery settings are unsafe or incomplete.
 
 ## Quality commands

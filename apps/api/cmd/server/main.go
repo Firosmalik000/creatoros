@@ -11,6 +11,9 @@ import (
 	authhandler "github.com/creatoros/platform/apps/api/internal/auth/handler"
 	authrepository "github.com/creatoros/platform/apps/api/internal/auth/repository"
 	authservice "github.com/creatoros/platform/apps/api/internal/auth/service"
+	creatorhandler "github.com/creatoros/platform/apps/api/internal/creator/handler"
+	creatorrepository "github.com/creatoros/platform/apps/api/internal/creator/repository"
+	creatorservice "github.com/creatoros/platform/apps/api/internal/creator/service"
 	"github.com/creatoros/platform/apps/api/internal/platform/config"
 	"github.com/creatoros/platform/apps/api/internal/platform/database"
 	platformhttp "github.com/creatoros/platform/apps/api/internal/platform/http"
@@ -63,10 +66,14 @@ func main() {
 	authHandler := authhandler.New(authService, logger, authhandler.Options{
 		Environment: cfg.Environment, CookieSecure: cfg.CookieSecure, RateLimiter: limiter,
 	})
+	creatorRepository := creatorrepository.NewPostgres(pool)
+	creatorService := creatorservice.New(creatorRepository)
+	creatorHandler := creatorhandler.New(creatorService, logger)
 	server := &http.Server{
 		Addr: ":" + cfg.Port,
 		Handler: platformhttp.NewRouter(logger, platformhttp.Options{
 			Auth:           authHandler,
+			Creator:        creatorHandler,
 			AllowedOrigins: cfg.AllowedOrigins,
 			Readiness: func(ctx context.Context) error {
 				return errors.Join(pool.Ping(ctx), limiter.Ping(ctx))

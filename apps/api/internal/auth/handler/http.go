@@ -92,6 +92,25 @@ func (handler *Handler) Mount(router chi.Router) {
 	})
 }
 
+// Authenticate exposes the shared cookie-session boundary to other HTTP modules.
+func (handler *Handler) Authenticate(next http.Handler) http.Handler {
+	return handler.authenticate(next)
+}
+
+// RequireCSRF exposes the shared CSRF boundary to authenticated HTTP modules.
+func (handler *Handler) RequireCSRF(next http.Handler) http.Handler {
+	return handler.requireCSRF(next)
+}
+
+// SessionFromContext returns the authenticated session installed by Authenticate.
+func SessionFromContext(ctx context.Context) (domain.Session, bool) {
+	authentication, ok := ctx.Value(authContextKey).(authContext)
+	if !ok {
+		return domain.Session{}, false
+	}
+	return authentication.Session, true
+}
+
 func (handler *Handler) register(response http.ResponseWriter, request *http.Request) {
 	if !handler.checkRateLimit(response, request, "register:network", requestIP(request), 100, time.Hour) {
 		return

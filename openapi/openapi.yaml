@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: CreatorOS API
-  version: 0.2.0
+  version: 0.3.0
   description: REST contract for the CreatorOS modular monolith.
 servers:
   - url: http://localhost:8080
@@ -14,6 +14,12 @@ tags:
     description: Account registration, verification, sessions, and password recovery.
   - name: Users
     description: Authenticated user profile and preference operations.
+  - name: Creators
+    description: Creator onboarding, verification, and public profile operations.
+  - name: Catalog
+    description: Public creator platform and category reference data.
+  - name: Administration
+    description: Privileged agency review operations.
 paths:
   /health/live:
     get:
@@ -239,6 +245,204 @@ paths:
           $ref: "#/components/responses/InvalidCSRF"
         "422":
           $ref: "#/components/responses/ValidationFailed"
+  /api/v1/catalog/creator-options:
+    get:
+      operationId: listCreatorOptions
+      summary: List active creator platforms and localized categories
+      tags: [Catalog]
+      parameters:
+        - $ref: "#/components/parameters/LocaleQuery"
+      responses:
+        "200":
+          description: Creator onboarding catalog.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatorCatalogResponse"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/creators/{slug}:
+    get:
+      operationId: getPublicCreatorProfile
+      summary: Return a verified creator public profile
+      tags: [Creators]
+      parameters:
+        - $ref: "#/components/parameters/CreatorSlug"
+        - $ref: "#/components/parameters/LocaleQuery"
+      responses:
+        "200":
+          description: Verified creator profile. Draft, rejected, suspended, and otherwise non-verified profiles are never returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicCreatorProfileResponse"
+        "404":
+          $ref: "#/components/responses/CreatorNotFound"
+  /api/v1/creators/me/onboarding:
+    get:
+      operationId: getCreatorOnboarding
+      summary: Return the current creator onboarding state
+      tags: [Creators]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/LocaleQuery"
+      responses:
+        "200":
+          description: Current creator onboarding state, including completeness.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatorOnboardingResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+    put:
+      operationId: saveCreatorOnboarding
+      summary: Atomically replace the current creator profile and evidence
+      tags: [Creators]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/LocaleQuery"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveCreatorOnboardingRequest"
+      responses:
+        "200":
+          description: Draft saved. Editing any previously reviewed profile returns it to draft and removes public visibility.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatorOnboardingResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+        "409":
+          $ref: "#/components/responses/CreatorSlugExists"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/creators/me/verification-submissions:
+    post:
+      operationId: submitCreatorVerification
+      summary: Submit a complete creator profile for agency review
+      tags: [Creators]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/LocaleQuery"
+      responses:
+        "200":
+          description: Creator profile submitted for review.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatorOnboardingResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+        "409":
+          $ref: "#/components/responses/InvalidCreatorTransition"
+        "422":
+          $ref: "#/components/responses/IncompleteCreatorProfile"
+  /api/v1/admin/creator-verifications:
+    get:
+      operationId: listCreatorVerifications
+      summary: List creator profiles by verification status
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/CreatorVerificationStatus"
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: per_page
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        "200":
+          description: Paginated verification queue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatorReviewQueueResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+  /api/v1/admin/creator-verifications/{user_id}:
+    get:
+      operationId: getCreatorVerification
+      summary: Return a complete creator profile for agency review
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CreatorUserID"
+        - $ref: "#/components/parameters/LocaleQuery"
+      responses:
+        "200":
+          description: Complete creator review evidence.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatorOnboardingResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/CreatorNotFound"
+  /api/v1/admin/creator-verifications/{user_id}/decisions:
+    post:
+      operationId: reviewCreatorVerification
+      summary: Record an agency creator-verification decision
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CreatorUserID"
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/LocaleQuery"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatorDecisionRequest"
+      responses:
+        "200":
+          description: Decision recorded with an immutable verification event.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatorOnboardingResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+        "404":
+          $ref: "#/components/responses/CreatorNotFound"
+        "409":
+          $ref: "#/components/responses/InvalidCreatorTransition"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
 components:
   securitySchemes:
     sessionCookie:
@@ -253,6 +457,27 @@ components:
       description: Must match the creatoros_csrf cookie bound to the current session.
       schema:
         type: string
+    LocaleQuery:
+      name: locale
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/Locale"
+    CreatorSlug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        maxLength: 80
+    CreatorUserID:
+      name: user_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
   responses:
     BadRequest:
       description: The JSON body is malformed, too large, contains unknown fields, or is not a single object.
@@ -322,6 +547,36 @@ components:
             $ref: "#/components/schemas/ErrorResponse"
     InvalidCSRF:
       description: The CSRF cookie and header are missing, different, or not bound to the session.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ForbiddenAction:
+      description: The authenticated role or permission cannot perform this action.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    CreatorNotFound:
+      description: The creator profile does not exist or is not publicly verified.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    CreatorSlugExists:
+      description: The requested public creator slug is already assigned.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    IncompleteCreatorProfile:
+      description: Required creator profile, category, language, social, or portfolio evidence is missing.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InvalidCreatorTransition:
+      description: The requested creator verification transition is not allowed from the current status.
       content:
         application/json:
           schema:
@@ -500,3 +755,255 @@ components:
             details:
               type: object
               additionalProperties: true
+    CatalogItem:
+      type: object
+      required: [code, name]
+      properties:
+        code: { type: string }
+        name: { type: string }
+    SocialAccount:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          platform_code,
+          handle,
+          profile_url,
+          follower_count,
+          average_views,
+          engagement_bps,
+        ]
+      properties:
+        platform_code: { type: string }
+        platform_name: { type: string }
+        handle: { type: string, minLength: 1, maxLength: 100 }
+        profile_url: { type: string, format: uri, maxLength: 2048 }
+        follower_count: { type: integer, format: int64, minimum: 0 }
+        average_views: { type: integer, format: int64, minimum: 0 }
+        engagement_bps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          description: Engagement percentage in basis points; 640 represents 6.40 percent.
+    PortfolioItem:
+      type: object
+      additionalProperties: false
+      required: [title, description, media_url, sort_order]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string, minLength: 2, maxLength: 120 }
+        description: { type: string, maxLength: 1000 }
+        media_url: { type: string, format: uri, maxLength: 2048 }
+        thumbnail_url: { type: string, format: uri, maxLength: 2048 }
+        sort_order: { type: integer, minimum: 0 }
+    CreatorVerificationStatus:
+      type: string
+      enum:
+        [
+          draft,
+          submitted,
+          under_review,
+          revision_required,
+          verified,
+          rejected,
+          suspended,
+        ]
+    CreatorProfile:
+      type: object
+      required:
+        [
+          user_id,
+          display_name,
+          slug,
+          headline,
+          bio,
+          city,
+          country_code,
+          verification_status,
+          categories,
+          languages,
+          social_accounts,
+          portfolio,
+        ]
+      properties:
+        user_id: { type: string, format: uuid }
+        display_name: { type: string }
+        slug: { type: string }
+        headline: { type: string }
+        bio: { type: string }
+        city: { type: string }
+        country_code: { type: string, pattern: "^[A-Z]{2}$" }
+        verification_status:
+          $ref: "#/components/schemas/CreatorVerificationStatus"
+        submitted_at:
+          oneOf: [{ type: string, format: date-time }, { type: "null" }]
+        reviewed_at:
+          oneOf: [{ type: string, format: date-time }, { type: "null" }]
+        review_note: { type: string }
+        categories:
+          type: array
+          items: { $ref: "#/components/schemas/CatalogItem" }
+        languages:
+          type: array
+          items: { $ref: "#/components/schemas/Locale" }
+        social_accounts:
+          type: array
+          items: { $ref: "#/components/schemas/SocialAccount" }
+        portfolio:
+          type: array
+          items: { $ref: "#/components/schemas/PortfolioItem" }
+    PublicCreatorProfile:
+      type: object
+      required:
+        [
+          display_name,
+          slug,
+          headline,
+          bio,
+          city,
+          country_code,
+          categories,
+          languages,
+          social_accounts,
+          portfolio,
+        ]
+      properties:
+        display_name: { type: string }
+        slug: { type: string }
+        headline: { type: string }
+        bio: { type: string }
+        city: { type: string }
+        country_code: { type: string, pattern: "^[A-Z]{2}$" }
+        categories:
+          type: array
+          items: { $ref: "#/components/schemas/CatalogItem" }
+        languages:
+          type: array
+          items: { $ref: "#/components/schemas/Locale" }
+        social_accounts:
+          type: array
+          items: { $ref: "#/components/schemas/SocialAccount" }
+        portfolio:
+          type: array
+          items: { $ref: "#/components/schemas/PortfolioItem" }
+    CreatorOnboarding:
+      allOf:
+        - $ref: "#/components/schemas/CreatorProfile"
+        - type: object
+          required: [complete, missing_fields]
+          properties:
+            complete: { type: boolean }
+            missing_fields:
+              type: array
+              items: { type: string }
+    SaveCreatorOnboardingRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          slug,
+          headline,
+          bio,
+          city,
+          country_code,
+          category_codes,
+          languages,
+          social_accounts,
+          portfolio,
+        ]
+      properties:
+        slug:
+          { type: string, pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$", maxLength: 80 }
+        headline: { type: string, minLength: 3, maxLength: 120 }
+        bio: { type: string, minLength: 20, maxLength: 2000 }
+        city: { type: string, minLength: 2, maxLength: 100 }
+        country_code: { type: string, pattern: "^[A-Z]{2}$" }
+        category_codes:
+          type: array
+          maxItems: 5
+          uniqueItems: true
+          items: { type: string }
+        languages:
+          type: array
+          maxItems: 3
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/Locale" }
+        social_accounts:
+          type: array
+          maxItems: 8
+          items: { $ref: "#/components/schemas/SocialAccount" }
+        portfolio:
+          type: array
+          maxItems: 12
+          items: { $ref: "#/components/schemas/PortfolioItem" }
+    CreatorDecisionRequest:
+      type: object
+      additionalProperties: false
+      required: [decision, note]
+      properties:
+        decision:
+          type: string
+          enum: [verified, revision_required, rejected, suspended]
+        note: { type: string, maxLength: 1000 }
+    CreatorCatalogResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [platforms, categories]
+          properties:
+            platforms:
+              type: array
+              items: { $ref: "#/components/schemas/CatalogItem" }
+            categories:
+              type: array
+              items: { $ref: "#/components/schemas/CatalogItem" }
+    PublicCreatorProfileResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: "#/components/schemas/PublicCreatorProfile" }
+    CreatorOnboardingResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: "#/components/schemas/CreatorOnboarding" }
+    CreatorReviewItem:
+      type: object
+      required:
+        [
+          user_id,
+          display_name,
+          slug,
+          headline,
+          city,
+          country_code,
+          status,
+          updated_at,
+        ]
+      properties:
+        user_id: { type: string, format: uuid }
+        display_name: { type: string }
+        slug: { type: string }
+        headline: { type: string }
+        city: { type: string }
+        country_code: { type: string }
+        status: { $ref: "#/components/schemas/CreatorVerificationStatus" }
+        submitted_at:
+          oneOf: [{ type: string, format: date-time }, { type: "null" }]
+        updated_at: { type: string, format: date-time }
+    CreatorReviewQueueResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/CreatorReviewItem" }
+        meta:
+          type: object
+          required: [page, per_page, total]
+          properties:
+            page: { type: integer }
+            per_page: { type: integer }
+            total: { type: integer }

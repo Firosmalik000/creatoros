@@ -27,3 +27,12 @@ Security controls must be tested at the phase that introduces the protected beha
 - Redis-backed limits protect public auth endpoints by hashed network/account/token keys and fail closed if Redis is unavailable.
 - Production verification and password-reset messages use a canonical configured origin, an AES-256-GCM encrypted durable outbox, SMTP STARTTLS, and retry backoff. The encryption key must remain available for queued messages and be managed as a production secret.
 - Forwarded client-IP headers are not trusted by the API. A trusted edge must enforce real client-IP limits when traffic reaches the API through a shared BFF/proxy peer.
+
+## Phase 2 creator controls
+
+- Creator onboarding endpoints require an authenticated creator role; admin review endpoints require `creator.verification.review` on the backend.
+- Every authenticated creator/admin mutation uses the shared session-bound CSRF control.
+- Public creator lookup requires both an active user and `verified` creator status in SQL. The response excludes internal review notes, reviewer identity, audit history, and user identifiers.
+- Editing previously reviewed creator data resets verification to `draft` and removes public visibility immediately; the public API and Next.js fetch use `no-store` to avoid serving stale suspended or unreviewed data.
+- Verification transitions are allowlisted and recorded in append-only events with the actor and timestamp.
+- Portfolio and social links accept HTTPS URLs only; uploads and content inspection remain outside Phase 2.

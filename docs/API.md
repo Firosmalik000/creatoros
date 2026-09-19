@@ -18,6 +18,13 @@ Successful business responses use `data` and optional `meta`. Errors use a stabl
 - `POST /api/v1/auth/forgot-password`: issue a reset without revealing account existence.
 - `POST /api/v1/auth/reset-password`: update the password and revoke existing sessions.
 - `PATCH /api/v1/users/me/settings`: persist the authenticated user's locale; requires CSRF validation.
+- `GET /api/v1/catalog/creator-options`: return active platforms and localized creator categories.
+- `GET /api/v1/creators/{slug}`: return a public profile only when the creator and account are active and verified.
+- `GET|PUT /api/v1/creators/me/onboarding`: read or atomically replace the authenticated creator's profile and evidence; writes require CSRF validation.
+- `POST /api/v1/creators/me/verification-submissions`: submit a complete creator profile; requires CSRF validation.
+- `GET /api/v1/admin/creator-verifications`: list profiles by verification status; requires the review permission.
+- `GET /api/v1/admin/creator-verifications/{user_id}`: inspect complete creator evidence; requires the review permission.
+- `POST /api/v1/admin/creator-verifications/{user_id}/decisions`: approve, request revision, reject, or suspend according to the state transition rules; requires the review permission and CSRF validation.
 
 Authentication uses the HttpOnly `creatoros_session` cookie. State-changing authenticated requests must also send `X-CSRF-Token` matching the session-bound `creatoros_csrf` cookie. Raw session and one-time tokens are never stored in authentication tables; only SHA-256 hashes are persisted there. Production verification and reset links are queued atomically in a durable outbox whose payload is encrypted with AES-256-GCM.
 
@@ -26,3 +33,5 @@ Production requires a canonical HTTPS `PUBLIC_WEB_URL`, an outbox encryption key
 Public auth endpoints are rate-limited in Redis by a hash of the network peer and by a hash of the relevant account/token identifier. Limits fail closed when Redis is unavailable and return `429` with `Retry-After` when exceeded. Deployments behind a BFF or reverse proxy must also enforce client-IP rate limits at the trusted edge because the API deliberately does not trust arbitrary forwarded-IP headers.
 
 Breaking changes require a new API version or an explicit compatibility plan.
+
+Creator social audience counts are integers. Engagement is represented as basis points (`640` means `6.40%`) rather than floating-point. Saving onboarding replaces the creator-owned category, language, social, and portfolio collections in one transaction. A reviewed profile that is edited returns to `draft` and immediately stops resolving from the public endpoint until approved again.

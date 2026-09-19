@@ -8,12 +8,14 @@ import (
 	"time"
 
 	authhandler "github.com/creatoros/platform/apps/api/internal/auth/handler"
+	creatorhandler "github.com/creatoros/platform/apps/api/internal/creator/handler"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
 type Options struct {
 	Auth           *authhandler.Handler
+	Creator        *creatorhandler.Handler
 	AllowedOrigins []string
 	Readiness      func(context.Context) error
 }
@@ -43,7 +45,12 @@ func NewRouter(logger *slog.Logger, optionValues ...Options) http.Handler {
 	router.Get("/health/live", health("live"))
 	router.Get("/health/ready", readiness(options.Readiness))
 	if options.Auth != nil {
-		router.Route("/api/v1", options.Auth.Mount)
+		router.Route("/api/v1", func(api chi.Router) {
+			options.Auth.Mount(api)
+			if options.Creator != nil {
+				options.Creator.Mount(api, options.Auth.Authenticate, options.Auth.RequireCSRF)
+			}
+		})
 	}
 
 	return router
@@ -81,7 +88,7 @@ func cors(origins []string) func(http.Handler) http.Handler {
 				response.Header().Set("Access-Control-Allow-Origin", origin)
 				response.Header().Set("Access-Control-Allow-Credentials", "true")
 				response.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token, X-Request-ID")
-				response.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS")
+				response.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, OPTIONS")
 				response.Header().Add("Vary", "Origin")
 			}
 			if request.Method == http.MethodOptions {

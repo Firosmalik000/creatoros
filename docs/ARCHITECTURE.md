@@ -14,6 +14,8 @@ Browser -> Next.js web -> REST /api/v1 -> Go modules -> PostgreSQL
 
 Each business module may contain `domain`, `service`, `repository`, `handler`, and `dto` packages. Dependencies point inward: handlers call services, services use domain interfaces, and infrastructure implements repositories. HTTP handlers do not contain authoritative business logic.
 
+The Phase 2 `creator` module follows this boundary. The auth handler exposes only shared session and CSRF middleware plus the authenticated session context; creator authorization and verification transitions remain in the creator service. The repository performs aggregate replacement and status/audit writes transactionally. Next.js owns the creator/admin operational surfaces and the server-rendered public profile, but never decides whether a creator is public.
+
 ## Cross-cutting boundaries
 
 - API responses use `{ "data": ..., "meta": ... }` or a stable error envelope.

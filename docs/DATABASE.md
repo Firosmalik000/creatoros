@@ -23,3 +23,13 @@ PostgreSQL is the system of record. Redis is used only for ephemeral concerns su
 - An `active` user must have `email_verified_at`; consuming a verification token cannot transition a disabled account.
 
 Migrations run through `cmd/migrate` and are serialized with a PostgreSQL advisory lock. Every `.up.sql` has a paired `.down.sql`; production rollback still requires an explicit data-impact review.
+
+## Phase 2 creator schema
+
+- `creator_profiles` is owned one-to-one by a creator user and has a unique public slug plus a constrained verification status.
+- `platforms` and localized `categories` are agency-controlled reference data. Join tables enforce valid category, platform, and language references.
+- `creator_social_accounts` stores integer followers/views and engagement basis points; a creator has at most one account per platform.
+- `creator_portfolios` stores ordered external HTTPS work references until managed uploads arrive in a later phase.
+- `creator_verification_events` is append-only audit history for submit, review, suspension, and review-reset transitions.
+- Onboarding aggregate writes replace profile-owned collections in one transaction. Any invalid reference rolls the complete write back.
+- Editing a reviewed profile returns it to `draft`. Public reads join an active user and require `verification_status = 'verified'`, so non-verified data is excluded at the database query boundary.

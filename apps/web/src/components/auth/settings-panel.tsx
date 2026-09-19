@@ -132,6 +132,24 @@ export function SettingsPanel() {
             <dd>{user.permissions.length}</dd>
           </div>
         </dl>
+        {user.roles.includes("creator") ||
+        user.permissions.includes("creator.verification.review") ? (
+          <nav
+            className="account-workspaces"
+            aria-label={translations("workspaceLinks")}
+          >
+            {user.roles.includes("creator") ? (
+              <Link href={`/${locale}/creator/onboarding`}>
+                {translations("creatorWorkspace")}
+              </Link>
+            ) : null}
+            {user.permissions.includes("creator.verification.review") ? (
+              <Link href={`/${locale}/admin/creator-verifications`}>
+                {translations("reviewWorkspace")}
+              </Link>
+            ) : null}
+          </nav>
+        ) : null}
       </section>
 
       <form className="settings-form" onSubmit={submit}>
