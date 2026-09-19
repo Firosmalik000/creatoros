@@ -265,7 +265,9 @@ paths:
     get:
       operationId: listCreatorDirectory
       summary: Discover verified creators with search, filters, sorting, and pagination
+      description: Public directory. A valid session cookie personalizes is_favorite; anonymous or expired sessions see false. Responses are private and not cacheable.
       tags: [Creators]
+      security: [{}, { sessionCookie: [] }]
       parameters:
         - $ref: "#/components/parameters/LocaleQuery"
         - { name: q, in: query, schema: { type: string, maxLength: 120 } }
@@ -1110,7 +1112,11 @@ components:
         followers: { type: integer, format: int64, minimum: 0 }
         engagement_bps: { type: integer, minimum: 0 }
         cover_url: { type: string, format: uri }
-        is_favorite: { type: boolean }
+        is_favorite:
+          {
+            type: boolean,
+            description: True when the signed-in client has saved this creator; false for anonymous visitors.,
+          }
     CreatorOnboardingResponse:
       type: object
       required: [data]

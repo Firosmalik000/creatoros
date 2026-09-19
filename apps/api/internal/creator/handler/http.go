@@ -54,9 +54,9 @@ func New(service *service.Service, logger *slog.Logger) *Handler {
 	return &Handler{service: service, logger: logger}
 }
 
-func (handler *Handler) Mount(router chi.Router, authenticate, requireCSRF Middleware) {
+func (handler *Handler) Mount(router chi.Router, authenticate, optionalAuthenticate, requireCSRF Middleware) {
 	router.Get("/catalog/creator-options", handler.catalog)
-	router.Get("/creators", handler.directory)
+	router.With(optionalAuthenticate).Get("/creators", handler.directory)
 	router.Get("/creators/{slug}", handler.publicProfile)
 	router.Group(func(protected chi.Router) {
 		protected.Use(authenticate)
@@ -73,6 +73,7 @@ func (handler *Handler) Mount(router chi.Router, authenticate, requireCSRF Middl
 }
 
 func (handler *Handler) directory(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Cache-Control", "private, no-store")
 	page, _ := strconv.Atoi(request.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(request.URL.Query().Get("per_page"))
 	filters := domain.DirectoryFilters{

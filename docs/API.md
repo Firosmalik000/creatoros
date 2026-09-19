@@ -19,7 +19,7 @@ Successful business responses use `data` and optional `meta`. Errors use a stabl
 - `POST /api/v1/auth/reset-password`: update the password and revoke existing sessions.
 - `PATCH /api/v1/users/me/settings`: persist the authenticated user's locale; requires CSRF validation.
 - `GET /api/v1/catalog/creator-options`: return active platforms and localized creator categories.
-- `GET /api/v1/creators`: discover verified creators with bounded search, category/language/country filters, deterministic sorting, and pagination.
+- `GET /api/v1/creators`: discover verified creators with bounded search, category/language/country filters, deterministic sorting, and pagination. A valid session cookie personalizes each card's `is_favorite`; anonymous or expired sessions see `false`. The response is private and not cacheable.
 - `GET /api/v1/me/favorites`: list the authenticated client's favorite creators; `POST|DELETE /api/v1/me/favorites/{slug}` adds or removes a favorite and requires CSRF validation.
 - `GET /api/v1/creators/{slug}`: return a public profile only when the creator and account are active and verified.
 - `GET|PUT /api/v1/creators/me/onboarding`: read or atomically replace the authenticated creator's profile and evidence; writes require CSRF validation.

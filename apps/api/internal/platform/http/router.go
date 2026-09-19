@@ -48,7 +48,7 @@ func NewRouter(logger *slog.Logger, optionValues ...Options) http.Handler {
 		router.Route("/api/v1", func(api chi.Router) {
 			options.Auth.Mount(api)
 			if options.Creator != nil {
-				options.Creator.Mount(api, options.Auth.Authenticate, options.Auth.RequireCSRF)
+				options.Creator.Mount(api, options.Auth.Authenticate, options.Auth.OptionalAuthenticate, options.Auth.RequireCSRF)
 			}
 		})
 	}

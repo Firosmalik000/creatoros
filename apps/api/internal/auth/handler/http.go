@@ -97,6 +97,32 @@ func (handler *Handler) Authenticate(next http.Handler) http.Handler {
 	return handler.authenticate(next)
 }
 
+// OptionalAuthenticate attaches a valid session to a public request when present.
+func (handler *Handler) OptionalAuthenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		cookie, err := request.Cookie(sessionCookieName)
+		if err != nil || cookie.Value == "" {
+			next.ServeHTTP(response, request)
+			return
+		}
+		session, err := handler.service.Authenticate(request.Context(), cookie.Value)
+		if err != nil {
+			if errors.Is(err, service.ErrUnauthenticated) || errors.Is(err, service.ErrAccountDisabled) {
+				handler.clearAuthCookies(response)
+				next.ServeHTTP(response, request)
+				return
+			}
+			handler.logInternal(request, err)
+			writeError(response, http.StatusInternalServerError, "internal_error", "The request could not be completed.", nil)
+			return
+		}
+		ctx := context.WithValue(request.Context(), authContextKey, authContext{
+			Session: session, SessionToken: cookie.Value,
+		})
+		next.ServeHTTP(response, request.WithContext(ctx))
+	})
+}
+
 // RequireCSRF exposes the shared CSRF boundary to authenticated HTTP modules.
 func (handler *Handler) RequireCSRF(next http.Handler) http.Handler {
 	return handler.requireCSRF(next)

@@ -147,6 +147,113 @@ func TestCreatorSaveIsAtomicWhenCatalogReferenceIsInvalid(t *testing.T) {
 	}
 }
 
+func TestMarketplaceDirectoryAndFavorites(t *testing.T) {
+	databaseURL := os.Getenv("TEST_DATABASE_URL")
+	if databaseURL == "" {
+		t.Skip("TEST_DATABASE_URL is not configured")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+	pool, err := database.Open(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("open database: %v", err)
+	}
+	defer pool.Close()
+	lock, err := pool.Acquire(ctx)
+	if err != nil {
+		t.Fatalf("acquire integration lock: %v", err)
+	}
+	if _, err := lock.Exec(ctx, "SELECT pg_advisory_lock($1)", int64(772001)); err != nil {
+		lock.Release()
+		t.Fatalf("lock integration database: %v", err)
+	}
+	defer func() {
+		_, _ = lock.Exec(context.Background(), "SELECT pg_advisory_unlock($1)", int64(772001))
+		lock.Release()
+	}()
+	if _, err := pool.Exec(ctx, "TRUNCATE users, email_outbox CASCADE"); err != nil {
+		t.Fatalf("truncate users: %v", err)
+	}
+	defer func() { _, _ = pool.Exec(context.Background(), "TRUNCATE users, email_outbox CASCADE") }()
+
+	creatorID := insertUser(t, ctx, pool, "marketplace-creator@example.test", "creator")
+	adminID := insertUser(t, ctx, pool, "marketplace-admin@example.test", "admin")
+	clientID := insertUser(t, ctx, pool, "marketplace-client@example.test", "client")
+	service := creatorservice.New(creatorrepository.NewPostgres(pool))
+	creator := domain.Actor{UserID: creatorID, Roles: []string{"creator"}}
+	admin := domain.Actor{UserID: adminID, Permissions: []string{"creator.verification.review"}}
+	client := domain.Actor{UserID: clientID, Permissions: []string{"marketplace.favorites.manage"}}
+	if _, err := service.SaveOnboarding(ctx, creator, completeInput("marketplace-creator"), "id"); err != nil {
+		t.Fatalf("save creator: %v", err)
+	}
+	filters := domain.DirectoryFilters{Query: "Food", Category: "food-lifestyle", Language: "id", CountryCode: "ID", Sort: "followers", Page: 1, PerPage: 1}
+	if result, err := service.Directory(ctx, filters, "id", ""); err != nil || result.Total != 0 {
+		t.Fatalf("draft must be hidden: total=%d err=%v", result.Total, err)
+	}
+	if _, err := service.Submit(ctx, creator, "id"); err != nil {
+		t.Fatalf("submit creator: %v", err)
+	}
+	if _, err := service.Review(ctx, admin, creatorID, "verified", "Evidence checked.", "id"); err != nil {
+		t.Fatalf("verify creator: %v", err)
+	}
+	secondID := insertUser(t, ctx, pool, "marketplace-second@example.test", "creator")
+	second := completeInput("second-marketplace-creator")
+	second.Headline = "Technology reviewer"
+	second.CategoryCodes = []string{"technology"}
+	second.SocialAccounts[0].FollowerCount = 80000
+	second.SocialAccounts[0].EngagementBPS = 300
+	if _, err := service.SaveOnboarding(ctx, domain.Actor{UserID: secondID, Roles: []string{"creator"}}, second, "id"); err != nil {
+		t.Fatalf("save second creator: %v", err)
+	}
+	if _, err := service.Submit(ctx, domain.Actor{UserID: secondID, Roles: []string{"creator"}}, "id"); err != nil {
+		t.Fatalf("submit second creator: %v", err)
+	}
+	if _, err := service.Review(ctx, admin, secondID, "verified", "Evidence checked.", "id"); err != nil {
+		t.Fatalf("verify second creator: %v", err)
+	}
+	ordered, err := service.Directory(ctx, domain.DirectoryFilters{Sort: "followers", Page: 1, PerPage: 1}, "id", "")
+	if err != nil || ordered.Total != 2 || len(ordered.Items) != 1 || ordered.Items[0].Slug != "second-marketplace-creator" {
+		t.Fatalf("followers order and first page: %#v err=%v", ordered, err)
+	}
+	ordered, err = service.Directory(ctx, domain.DirectoryFilters{Sort: "followers", Page: 2, PerPage: 1}, "id", "")
+	if err != nil || ordered.Total != 2 || len(ordered.Items) != 1 || ordered.Items[0].Slug != "marketplace-creator" {
+		t.Fatalf("followers second page: %#v err=%v", ordered, err)
+	}
+	ordered, err = service.Directory(ctx, domain.DirectoryFilters{Sort: "engagement", Page: 1, PerPage: 1}, "id", "")
+	if err != nil || ordered.Total != 2 || len(ordered.Items) != 1 || ordered.Items[0].Slug != "marketplace-creator" {
+		t.Fatalf("engagement order: %#v err=%v", ordered, err)
+	}
+	result, err := service.Directory(ctx, filters, "id", "")
+	if err != nil || result.Total != 1 || len(result.Items) != 1 || result.Items[0].Slug != "marketplace-creator" || result.Items[0].Followers != 42000 || result.Items[0].IsFavorite {
+		t.Fatalf("unexpected directory result: %#v err=%v", result, err)
+	}
+	if err := service.AddFavorite(ctx, creator, "marketplace-creator"); !errors.Is(err, creatorservice.ErrForbidden) {
+		t.Fatalf("creator favorite write must be forbidden: %v", err)
+	}
+	for i := 0; i < 2; i++ {
+		if err := service.AddFavorite(ctx, client, "marketplace-creator"); err != nil {
+			t.Fatalf("add favorite attempt %d: %v", i+1, err)
+		}
+	}
+	favorites, err := service.Favorites(ctx, client, filters, "id")
+	if err != nil || favorites.Total != 1 || len(favorites.Items) != 1 || !favorites.Items[0].IsFavorite {
+		t.Fatalf("unexpected favorites: %#v err=%v", favorites, err)
+	}
+	visible, err := service.Directory(ctx, filters, "id", clientID)
+	if err != nil || len(visible.Items) != 1 || !visible.Items[0].IsFavorite {
+		t.Fatalf("authenticated directory must mark favorite: %#v err=%v", visible, err)
+	}
+	if err := service.RemoveFavorite(ctx, client, "marketplace-creator"); err != nil {
+		t.Fatalf("remove favorite: %v", err)
+	}
+	if result, err := service.Favorites(ctx, client, filters, "id"); err != nil || result.Total != 0 {
+		t.Fatalf("favorite must be removed: total=%d err=%v", result.Total, err)
+	}
+	if _, err := service.Directory(ctx, domain.DirectoryFilters{Sort: "invalid"}, "id", ""); !errors.Is(err, creatorservice.ErrValidation) {
+		t.Fatalf("invalid sort must fail validation: %v", err)
+	}
+}
+
 func completeInput(slug string) domain.SaveInput {
 	return domain.SaveInput{
 		Slug: slug, Headline: "Food and lifestyle storyteller",
@@ -178,7 +285,7 @@ func insertUser(t *testing.T, ctx context.Context, pool *pgxpool.Pool, email, ro
 			RETURNING user_id
 		)
 		SELECT user_id FROM assigned
-	`, email, map[string]string{"creator": "Phase Two Creator", "admin": "Agency Reviewer"}[role], role).Scan(&userID); err != nil {
+	`, email, map[string]string{"creator": "Phase Two Creator", "admin": "Agency Reviewer", "client": "Marketplace Client"}[role], role).Scan(&userID); err != nil {
 		t.Fatalf("insert %s user: %v", role, err)
 	}
 	return userID

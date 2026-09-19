@@ -106,7 +106,7 @@ Tidak membangun fitur marketplace sebelum seluruh exit gate Phase 0 lulus.
 
 ## Phase 3 — Marketplace
 
-**Status:** IMPLEMENTED — verification pending
+**Status:** COMPLETE (verified 2026-09-19)
 
 ### Build
 
@@ -121,11 +121,11 @@ Tidak membangun fitur marketplace sebelum seluruh exit gate Phase 0 lulus.
 
 ### Exit gate
 
-- [ ] Mobile, tablet, and desktop experiences are usable
-- [ ] Search is keyboard accessible
-- [ ] Filters are shareable through the URL
-- [ ] Intended SEO pages are indexable
-- [ ] Query/filter pages do not create crawl traps
+- [x] Mobile, tablet, and desktop experiences are usable
+- [x] Search is keyboard accessible
+- [x] Filters are shareable through the URL
+- [x] Intended SEO pages are indexable
+- [x] Query/filter pages do not create crawl traps
 
 ### Evidence log
 
@@ -133,6 +133,10 @@ Tidak membangun fitur marketplace sebelum seluruh exit gate Phase 0 lulus.
 - 2026-09-19: Web typecheck, lint, formatting, UI detector, desktop/mobile responsive review, loading/empty/error state review, and mobile overflow regression verification passed. Category pages are catalog-validated, localized with canonical/hreflang/OG/CollectionPage metadata, and included in the sitemap.
 - 2026-09-19: Go API package tests and live PostgreSQL filter/favorite smoke tests require the local Go/Docker toolchain, which is unavailable in the current shell; phase remains pending until those backend gates are rerun.
 - 2026-09-19: User reran `go test ./...` from `apps/api`; all API packages passed. Docker Compose remains blocked because the Docker Desktop Linux engine daemon is not running, so migration and PostgreSQL filter/favorite smoke tests are still pending.
+- 2026-09-19: Docker Desktop Linux Engine recovered. Compose PostgreSQL, Redis, and MinIO were healthy; API `/health/ready` returned HTTP 200. Schema versions 1–5, the `creator_favorites` table, and the client favorites permission were verified. Migration `000005_marketplace_favorites` applied, rolled back one step, and reapplied on an isolated test database.
+- 2026-09-19: Live API smoke tests passed for search, category/language/country filters, sorting, combined filters, empty result, pagination, and invalid sort (`422`). Client favorite add/duplicate add/remove, authenticated list, and CSRF rejection (`403`) passed. A regression where the public directory ignored a valid session was fixed with optional authentication; the authenticated API response and web SSR now mark saved cards `is_favorite: true` and return `false` after removal. Directory responses are private and non-cacheable; OpenAPI and API documentation reflect optional session personalization.
+- 2026-09-19: PostgreSQL-backed Go integration test covers draft exclusion, two verified creators, follower/engagement ordering, second-page pagination, combined filters, favorite authorization/idempotency/add/remove, personalized directory state, and invalid sort. Full `go test ./...` passed against the isolated database; `go vet ./...` and `go build ./...` passed.
+- 2026-09-19: Browser E2E checked keyboard Enter search, URL-shared search/category filter, category-page 200 and unknown-category 404, localized canonical/hreflang/JSON-LD/index metadata, and query/filter `noindex, follow` with base canonical. At 390px mobile, 768px tablet, and 1280px desktop, the directory had no horizontal overflow and search/cards remained usable. Frontend format, lint, typecheck, locale tests, and production build passed. Redocly confirmed the OpenAPI 3.1 contract is valid with the same four pre-existing repository warnings.
 
 ## Phase 4 — Services
 
