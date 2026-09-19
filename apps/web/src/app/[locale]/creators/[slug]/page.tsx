@@ -13,6 +13,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { getPublicCreator } from "@/lib/creator-server";
+import { getPublicServices } from "@/lib/service-server";
 import { siteConfig } from "@/lib/site";
 
 type PageProps = {
@@ -64,7 +65,10 @@ export async function generateMetadata({
 export default async function CreatorProfilePage({ params }: PageProps) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const creator = await getPublicCreator(slug, locale);
+  const [creator, services] = await Promise.all([
+    getPublicCreator(slug, locale),
+    getPublicServices(slug),
+  ]);
   if (!creator) notFound();
   const [t, nav] = await Promise.all([
     getTranslations("CreatorProfile"),
@@ -162,6 +166,43 @@ export default async function CreatorProfilePage({ params }: PageProps) {
                 ))}
               </div>
             </section>
+            {services.length ? (
+              <section className="creator-profile-section">
+                <h2>{t("services")}</h2>
+                <div className="profile-services">
+                  {services.map((item) => {
+                    const starting = item.packages[0];
+                    const amount = starting
+                      ? starting.price_minor /
+                        (starting.currency === "IDR" ? 1 : 100)
+                      : 0;
+                    return (
+                      <Link
+                        href={`/${locale}/creators/${creator.slug}/services/${item.slug}`}
+                        key={item.id}
+                      >
+                        <div>
+                          <h3>{item.title}</h3>
+                          <p>{item.description}</p>
+                        </div>
+                        {starting ? (
+                          <strong>
+                            {t("startingAt")}{" "}
+                            {new Intl.NumberFormat(locale, {
+                              style: "currency",
+                              currency: starting.currency,
+                              maximumFractionDigits:
+                                starting.currency === "IDR" ? 0 : 2,
+                            }).format(amount)}
+                          </strong>
+                        ) : null}
+                        <ArrowUpRight aria-hidden="true" size={20} />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : null}
           </div>
           <aside className="creator-proof" aria-label={t("proofLabel")}>
             <h2>{t("platforms")}</h2>

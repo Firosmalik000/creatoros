@@ -10,6 +10,14 @@ function backendPath(path: string) {
   if (favorite) return `/me/favorites/${favorite[1]}`;
   if (path === "onboarding") return "/creators/me/onboarding";
   if (path === "submit") return "/creators/me/verification-submissions";
+  if (path === "services") return "/creators/me/services";
+  const ownService = path.match(/^services\/([0-9a-f-]{36})$/i);
+  if (ownService) return `/creators/me/services/${ownService[1]}`;
+  const serviceAction = path.match(
+    /^services\/([0-9a-f-]{36})\/(publish|unpublish)$/i,
+  );
+  if (serviceAction)
+    return `/creators/me/services/${serviceAction[1]}/${serviceAction[2]}`;
   if (path === "admin") return "/admin/creator-verifications";
   const detail = path.match(/^admin\/([0-9a-f-]{36})$/i);
   if (detail) return `/admin/creator-verifications/${detail[1]}`;

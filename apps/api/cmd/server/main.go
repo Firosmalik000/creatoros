@@ -19,6 +19,9 @@ import (
 	platformhttp "github.com/creatoros/platform/apps/api/internal/platform/http"
 	"github.com/creatoros/platform/apps/api/internal/platform/notification"
 	"github.com/creatoros/platform/apps/api/internal/platform/ratelimit"
+	servicehandler "github.com/creatoros/platform/apps/api/internal/service/handler"
+	servicerepository "github.com/creatoros/platform/apps/api/internal/service/repository"
+	serviceservice "github.com/creatoros/platform/apps/api/internal/service/service"
 )
 
 func main() {
@@ -69,11 +72,15 @@ func main() {
 	creatorRepository := creatorrepository.NewPostgres(pool)
 	creatorService := creatorservice.New(creatorRepository)
 	creatorHandler := creatorhandler.New(creatorService, logger)
+	serviceRepository := servicerepository.NewPostgres(pool)
+	serviceService := serviceservice.New(serviceRepository)
+	serviceHandler := servicehandler.New(serviceService, logger)
 	server := &http.Server{
 		Addr: ":" + cfg.Port,
 		Handler: platformhttp.NewRouter(logger, platformhttp.Options{
 			Auth:           authHandler,
 			Creator:        creatorHandler,
+			Service:        serviceHandler,
 			AllowedOrigins: cfg.AllowedOrigins,
 			Readiness: func(ctx context.Context) error {
 				return errors.Join(pool.Ping(ctx), limiter.Ping(ctx))

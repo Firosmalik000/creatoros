@@ -27,6 +27,11 @@ Successful business responses use `data` and optional `meta`. Errors use a stabl
 - `GET /api/v1/admin/creator-verifications`: list profiles by verification status; requires the review permission.
 - `GET /api/v1/admin/creator-verifications/{user_id}`: inspect complete creator evidence; requires the review permission.
 - `POST /api/v1/admin/creator-verifications/{user_id}/decisions`: approve, request revision, reject, or suspend according to the state transition rules; requires the review permission and CSRF validation.
+- `GET|POST /api/v1/creators/me/services`: list owned services or create an owned draft with one to three packages; creation requires CSRF validation.
+- `GET|PUT /api/v1/creators/me/services/{service_id}`: read or atomically replace an owned service and packages; replacement requires CSRF and returns the service to draft.
+- `POST /api/v1/creators/me/services/{service_id}/publish|unpublish`: explicitly change public availability; requires ownership, creator permission, and CSRF validation.
+- `GET /api/v1/creators/{creator_slug}/services`: list only published services owned by an active, verified creator.
+- `GET /api/v1/creators/{creator_slug}/services/{service_slug}`: return one public service with selectable packages.
 
 Authentication uses the HttpOnly `creatoros_session` cookie. State-changing authenticated requests must also send `X-CSRF-Token` matching the session-bound `creatoros_csrf` cookie. Raw session and one-time tokens are never stored in authentication tables; only SHA-256 hashes are persisted there. Production verification and reset links are queued atomically in a durable outbox whose payload is encrypted with AES-256-GCM.
 
@@ -37,3 +42,5 @@ Public auth endpoints are rate-limited in Redis by a hash of the network peer an
 Breaking changes require a new API version or an explicit compatibility plan.
 
 Creator social audience counts are integers. Engagement is represented as basis points (`640` means `6.40%`) rather than floating-point. Saving onboarding replaces the creator-owned category, language, social, and portfolio collections in one transaction. A reviewed profile that is edited returns to `draft` and immediately stops resolving from the public endpoint until approved again.
+
+Service money uses `price_minor` integers plus explicit `currency`. IDR values are whole rupiah; MYR and USD values are cents. Saving a service atomically replaces its packages and clears publication. Only the Go API may publish a service, after checking ownership, creator verification, account status, and package completeness.

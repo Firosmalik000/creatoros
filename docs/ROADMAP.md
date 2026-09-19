@@ -140,22 +140,30 @@ Tidak membangun fitur marketplace sebelum seluruh exit gate Phase 0 lulus.
 
 ## Phase 4 — Services
 
-**Status:** PLANNED
+**Status:** COMPLETE (verified 2026-09-19)
 
 ### Build
 
-- [ ] Creator services
-- [ ] Packages
-- [ ] Pricing
-- [ ] Delivery time
-- [ ] Revision limit
-- [ ] Service detail
+- [x] Creator services
+- [x] Packages
+- [x] Pricing
+- [x] Delivery time
+- [x] Revision limit
+- [x] Service detail
 
 ### Exit gate
 
-- [ ] Creator can create and edit a service
-- [ ] Only published services are public
-- [ ] Client can select a package
+- [x] Creator can create and edit a service
+- [x] Only published services are public
+- [x] Client can select a package
+
+### Evidence log
+
+- 2026-09-19: Migration `000006_creator_services` applied, rolled back one step, and reapplied on an isolated PostgreSQL database. Schema versions 1–6, `creator_services`, `service_packages`, and the creator service-management permission were verified directly.
+- 2026-09-19: PostgreSQL integration lifecycle passed for creator-owned draft creation, package replacement, integer minor-unit prices and currencies, non-owner isolation, draft exclusion from public reads, verified-creator publish guard, published detail, edit-to-draft behavior, and invalid zero-money validation. Full `go test ./...`, `go vet ./...`, and `go build ./...` passed against the isolated Phase 4 database.
+- 2026-09-19: Live API readiness returned HTTP 200; public service list returned HTTP 200, missing public service returned HTTP 404, and private service list without a session returned HTTP 401. Compose API image was rebuilt from the Phase 4 source and migration 000006 ran successfully against the application database; PostgreSQL, Redis, and MinIO remained healthy.
+- 2026-09-19: OpenAPI 3.1 version 0.4.0 describes service CRUD, publish/unpublish, public listing/detail, package money semantics, ownership, CSRF, and transition responses. Redocly validation passed with the four pre-existing repository warnings.
+- 2026-09-19: Next.js route build generated creator service studio routes for all locales and the dynamic public service detail route. Frontend format, locale tests, ESLint, typecheck, and production build passed; the Impeccable detector returned no findings for changed UI targets. The web Docker image rebuild was attempted but Docker Hub DNS could not resolve `auth.docker.io`; local production build remains green and API/container verification is complete.
 
 ## Phase 5 — Order
 
@@ -396,3 +404,4 @@ Add dated evidence here whenever a phase is completed.
 | 2026-09-18 | Phase 1 API contract         | Redocly validated `openapi/openapi.yaml`; explicit public/default and cookie-auth security contracts documented                                                                                                                                                                                                                                                                                                                                                            | PASS   |
 | 2026-09-18 | Phase 1 local stack          | Docker Compose rebuilt after local Docker recovery; PostgreSQL, Redis, and MinIO healthy; API `/health/ready` and web `/id/auth/register` returned HTTP 200                                                                                                                                                                                                                                                                                                                | PASS   |
 | 2026-09-18 | Phase 1 auth hardening       | Migration `000003_auth_hardening` apply/down/up; disabled-account verification regression; AES-256-GCM outbox enqueue/delivery/expiry cleanup; Redis network/account rate limits with `429`/`Retry-After`; production secure-cookie/config fail-closed tests; `go vet ./...`, PostgreSQL+Redis `go test ./...`, Linux `go test -race ./...`, API build, Redocly validation, web format/lint/typecheck/test/build, Compose rebuild, and PostgreSQL+Redis readiness HTTP 200 | PASS   |
+| 2026-09-19 | Phase 4 services             | Migration 000006 up/down/up; isolated PostgreSQL service lifecycle integration; live API readiness and public/private HTTP smoke; Go vet/build/test; OpenAPI 0.4.0 Redocly validation; frontend format/lint/typecheck/test/build; service studio and public package route build; UI detector clean                                                                                                                                                                         | PASS   |

@@ -23,7 +23,7 @@ Before implementation, read `README.md`, `PRODUCT.md`, `DESIGN.md`, `docs/ROADMA
 - [x] Phase 1 — Auth & User (verified 2026-09-18; evidence in `docs/ROADMAP.md`)
 - [x] Phase 2 — Creator Foundation (verified 2026-09-19; evidence in `docs/ROADMAP.md`)
 - [x] Phase 3 — Marketplace (verified 2026-09-19; evidence in `docs/ROADMAP.md`)
-- [ ] Phase 4 — Services
+- [x] Phase 4 — Services (verified 2026-09-19; evidence in `docs/ROADMAP.md`)
 - [ ] Phase 5 — Order
 - [ ] Phase 6 — Content Workflow
 - [ ] Phase 7 — Campaign

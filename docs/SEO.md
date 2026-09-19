@@ -10,3 +10,5 @@ Phase 2 public creator profiles are server-rendered only for verified creators a
 
 Phase 3 adds a server-rendered creator directory and curated `/creators/category/{category}` landing pages. The base directory and category pages are indexable; arbitrary search, filter, sort, and pagination combinations are `noindex, follow` with a canonical pointing to the base directory.
 The localized sitemap includes the directory and the seeded category landing pages; arbitrary query combinations are intentionally excluded.
+
+Phase 4 published service details are server-rendered and indexable with localized title/description, canonical, hreflang, Open Graph, and `Service`/`Offer` JSON-LD. Draft services, services owned by unverified or inactive creators, and the creator service studio are not indexable.

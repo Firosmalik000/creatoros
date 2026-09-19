@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: CreatorOS API
-  version: 0.3.0
+  version: 0.4.0
   description: REST contract for the CreatorOS modular monolith.
 servers:
   - url: http://localhost:8080
@@ -16,6 +16,8 @@ tags:
     description: Authenticated user profile and preference operations.
   - name: Creators
     description: Creator onboarding, verification, and public profile operations.
+  - name: Services
+    description: Creator-owned service offers, packages, publication, and public selection.
   - name: Catalog
     description: Public creator platform and category reference data.
   - name: Administration
@@ -382,6 +384,154 @@ paths:
                 $ref: "#/components/schemas/PublicCreatorProfileResponse"
         "404":
           $ref: "#/components/responses/CreatorNotFound"
+  /api/v1/creators/{creator_slug}/services:
+    get:
+      operationId: listPublicCreatorServices
+      summary: List published services for a verified creator
+      tags: [Services]
+      parameters:
+        - $ref: "#/components/parameters/CreatorPublicSlug"
+      responses:
+        "200":
+          description: Published creator services, or an empty list when the verified creator has none.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceListResponse"
+        "404": { $ref: "#/components/responses/CreatorNotFound" }
+  /api/v1/creators/{creator_slug}/services/{service_slug}:
+    get:
+      operationId: getPublicCreatorService
+      summary: Return a published creator service and selectable packages
+      tags: [Services]
+      parameters:
+        - $ref: "#/components/parameters/CreatorPublicSlug"
+        - $ref: "#/components/parameters/ServiceSlug"
+      responses:
+        "200":
+          description: Published service owned by an active, verified creator.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceResponse"
+        "404": { $ref: "#/components/responses/ServiceNotFound" }
+  /api/v1/creators/me/services:
+    get:
+      operationId: listOwnCreatorServices
+      summary: List the authenticated creator's services
+      tags: [Services]
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: Creator-owned draft and published services.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceListResponse"
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/ForbiddenAction" }
+    post:
+      operationId: createCreatorService
+      summary: Create a creator service draft with packages
+      tags: [Services]
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SaveServiceRequest" }
+      responses:
+        "201":
+          description: Service draft created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ServiceResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/InvalidCSRF" }
+        "409": { $ref: "#/components/responses/ServiceSlugExists" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+  /api/v1/creators/me/services/{service_id}:
+    get:
+      operationId: getOwnCreatorService
+      summary: Return one service owned by the authenticated creator
+      tags: [Services]
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/ServiceID"
+      responses:
+        "200":
+          description: Creator-owned service.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ServiceResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/ForbiddenAction" }
+        "404": { $ref: "#/components/responses/ServiceNotFound" }
+    put:
+      operationId: updateOwnCreatorService
+      summary: Replace an owned service and return it to draft
+      tags: [Services]
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/ServiceID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SaveServiceRequest" }
+      responses:
+        "200":
+          description: Service and packages atomically replaced; publication cleared.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ServiceResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/InvalidCSRF" }
+        "404": { $ref: "#/components/responses/ServiceNotFound" }
+        "409": { $ref: "#/components/responses/ServiceSlugExists" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+  /api/v1/creators/me/services/{service_id}/publish:
+    post:
+      operationId: publishOwnCreatorService
+      summary: Publish a complete service owned by a verified creator
+      tags: [Services]
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/ServiceID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: Service published.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ServiceResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/InvalidCSRF" }
+        "404": { $ref: "#/components/responses/ServiceNotFound" }
+        "409": { $ref: "#/components/responses/InvalidServiceTransition" }
+  /api/v1/creators/me/services/{service_id}/unpublish:
+    post:
+      operationId: unpublishOwnCreatorService
+      summary: Return a published creator service to draft
+      tags: [Services]
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/ServiceID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: Service returned to draft and removed from public reads.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ServiceResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/InvalidCSRF" }
+        "404": { $ref: "#/components/responses/ServiceNotFound" }
   /api/v1/creators/me/onboarding:
     get:
       operationId: getCreatorOnboarding
@@ -582,6 +732,27 @@ components:
       schema:
         type: string
         format: uuid
+    CreatorPublicSlug:
+      name: creator_slug
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        maxLength: 80
+    ServiceSlug:
+      name: service_slug
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        maxLength: 80
+    ServiceID:
+      name: service_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
   responses:
     BadRequest:
       description: The JSON body is malformed, too large, contains unknown fields, or is not a single object.
@@ -685,7 +856,107 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
+    ServiceNotFound:
+      description: The service does not exist, is not owned by the caller, or is not public.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    ServiceSlugExists:
+      description: The creator already uses this service slug.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    InvalidServiceTransition:
+      description: The service cannot be published because its creator is not active and verified or the service is incomplete.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
   schemas:
+    ServicePackage:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          name,
+          description,
+          price_minor,
+          currency,
+          delivery_days,
+          revision_limit,
+          sort_order,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 2, maxLength: 80 }
+        description: { type: string, maxLength: 1000 }
+        price_minor:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 1000000000000
+          description: Integer minor units. IDR has zero fractional digits; MYR and USD use cents.
+        currency: { type: string, enum: [IDR, MYR, USD] }
+        delivery_days: { type: integer, minimum: 1, maximum: 365 }
+        revision_limit: { type: integer, minimum: 0, maximum: 20 }
+        sort_order: { type: integer, minimum: 0, maximum: 2 }
+    CreatorService:
+      type: object
+      required:
+        [
+          id,
+          creator_slug,
+          creator_display_name,
+          slug,
+          title,
+          description,
+          status,
+          packages,
+          created_at,
+          updated_at,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        creator_slug: { type: string }
+        creator_display_name: { type: string }
+        slug: { type: string }
+        title: { type: string }
+        description: { type: string }
+        status: { type: string, enum: [draft, published] }
+        packages:
+          type: array
+          minItems: 1
+          maxItems: 3
+          items: { $ref: "#/components/schemas/ServicePackage" }
+        published_at:
+          oneOf: [{ type: string, format: date-time }, { type: "null" }]
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    SaveServiceRequest:
+      type: object
+      additionalProperties: false
+      required: [slug, title, description, packages]
+      properties:
+        slug:
+          { type: string, pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$", maxLength: 80 }
+        title: { type: string, minLength: 3, maxLength: 120 }
+        description: { type: string, minLength: 20, maxLength: 3000 }
+        packages:
+          type: array
+          minItems: 1
+          maxItems: 3
+          items: { $ref: "#/components/schemas/ServicePackage" }
+    ServiceResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: "#/components/schemas/CreatorService" }
+    ServiceListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/CreatorService" }
     HealthResponse:
       type: object
       required: [data]

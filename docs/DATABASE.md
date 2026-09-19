@@ -38,3 +38,10 @@ Migrations run through `cmd/migrate` and are serialized with a PostgreSQL adviso
 
 - `creator_favorites` stores the client-to-creator relationship with a composite primary key, cascading cleanup, and a client-role permission assignment.
 - Directory reads derive follower and engagement aggregates from creator evidence and only include active, verified profiles. Favorite writes are idempotent and never overwrite creator-owned data.
+
+## Phase 4 services schema
+
+- `creator_services` belongs to one creator profile and has a creator-scoped unique slug plus constrained `draft`/`published` state. Published rows require `published_at`.
+- `service_packages` belongs to one service and stores `price_minor bigint` with required `IDR`, `MYR`, or `USD` currency, delivery days, revision limit, and a database-constrained order allowing at most three packages.
+- Service and package writes replace the owned aggregate in one transaction. Editing always clears publication, so stale pricing cannot remain public without explicit republishing.
+- Public service queries independently require the account to be active, creator verification to be `verified`, and the service to be `published`.

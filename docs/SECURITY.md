@@ -36,3 +36,10 @@ Security controls must be tested at the phase that introduces the protected beha
 - Editing previously reviewed creator data resets verification to `draft` and removes public visibility immediately; the public API and Next.js fetch use `no-store` to avoid serving stale suspended or unreviewed data.
 - Verification transitions are allowlisted and recorded in append-only events with the actor and timestamp.
 - Portfolio and social links accept HTTPS URLs only; uploads and content inspection remain outside Phase 2.
+
+## Phase 4 service controls
+
+- Private service reads and mutations require an authenticated owner with `creator.services.manage`; mutations also require the shared session-bound CSRF control.
+- Repository queries scope every private lookup and write to the authenticated creator ID, and non-owned IDs return the same not-found contract.
+- Publishing is backend-authoritative and requires an active, verified creator plus at least one valid package. Editing or explicitly unpublishing removes the offer from public reads immediately.
+- Prices are bounded integer minor units with an allowlisted ISO currency. Delivery and revision limits are validated in Go and constrained again in PostgreSQL.

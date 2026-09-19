@@ -9,6 +9,7 @@ import (
 
 	authhandler "github.com/creatoros/platform/apps/api/internal/auth/handler"
 	creatorhandler "github.com/creatoros/platform/apps/api/internal/creator/handler"
+	servicehandler "github.com/creatoros/platform/apps/api/internal/service/handler"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -16,6 +17,7 @@ import (
 type Options struct {
 	Auth           *authhandler.Handler
 	Creator        *creatorhandler.Handler
+	Service        *servicehandler.Handler
 	AllowedOrigins []string
 	Readiness      func(context.Context) error
 }
@@ -49,6 +51,9 @@ func NewRouter(logger *slog.Logger, optionValues ...Options) http.Handler {
 			options.Auth.Mount(api)
 			if options.Creator != nil {
 				options.Creator.Mount(api, options.Auth.Authenticate, options.Auth.OptionalAuthenticate, options.Auth.RequireCSRF)
+			}
+			if options.Service != nil {
+				options.Service.Mount(api, options.Auth.Authenticate, options.Auth.RequireCSRF)
 			}
 		})
 	}

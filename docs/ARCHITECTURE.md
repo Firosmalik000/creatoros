@@ -16,6 +16,8 @@ Each business module may contain `domain`, `service`, `repository`, `handler`, a
 
 The Phase 2 `creator` module follows this boundary. The auth handler exposes only shared session and CSRF middleware plus the authenticated session context; creator authorization and verification transitions remain in the creator service. The repository performs aggregate replacement and status/audit writes transactionally. Next.js owns the creator/admin operational surfaces and the server-rendered public profile, but never decides whether a creator is public.
 
+The Phase 4 `service` module owns creator service offers, packages, pricing, and publish/unpublish rules. Package replacement is atomic. The module checks ownership and the creator-management permission for private operations; public queries independently require an active, verified creator and a published service. Next.js renders the operational studio and public package selection but does not decide publication eligibility or calculate stored money.
+
 ## Cross-cutting boundaries
 
 - API responses use `{ "data": ..., "meta": ... }` or a stable error envelope.
