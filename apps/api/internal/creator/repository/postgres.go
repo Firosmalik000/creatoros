@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/creatoros/platform/apps/api/internal/creator/domain"
@@ -313,6 +315,121 @@ func (repository *Postgres) FindPublicProfile(ctx context.Context, slug, locale 
 		return domain.Profile{}, fmt.Errorf("find public creator id: %w", err)
 	}
 	return loadProfile(ctx, repository.pool, userID, locale)
+}
+
+func (repository *Postgres) ListDirectory(ctx context.Context, filters domain.DirectoryFilters, locale, viewerID string) (domain.DirectoryResult, error) {
+	countStart := 1
+	if filters.FavoritesOnly {
+		countStart = 2
+	}
+	countWhere, countArgs := directoryWhere(filters, countStart)
+	if filters.FavoritesOnly {
+		countArgs = append([]any{viewerID}, countArgs...)
+	}
+	countQuery := `SELECT count(*) FROM creator_profiles p JOIN users u ON u.id = p.user_id WHERE p.verification_status = 'verified' AND u.status = 'active' AND ` + countWhere
+	var total int
+	if err := repository.pool.QueryRow(ctx, countQuery, countArgs...).Scan(&total); err != nil {
+		return domain.DirectoryResult{}, fmt.Errorf("count creator directory: %w", err)
+	}
+	where, args := directoryWhere(filters, 2)
+	queryArgs := append([]any{viewerID}, args...)
+
+	orderBy := "p.reviewed_at DESC NULLS LAST, p.updated_at DESC, p.slug ASC"
+	switch filters.Sort {
+	case "followers":
+		orderBy = "COALESCE((SELECT SUM(s.follower_count) FROM creator_social_accounts s WHERE s.creator_user_id = p.user_id), 0) DESC, p.slug ASC"
+	case "engagement":
+		orderBy = "COALESCE((SELECT ROUND(AVG(s.engagement_bps))::int FROM creator_social_accounts s WHERE s.creator_user_id = p.user_id), 0) DESC, p.slug ASC"
+	case "newest":
+		orderBy = "p.reviewed_at DESC NULLS LAST, p.updated_at DESC, p.slug ASC"
+	}
+	limitArg := len(queryArgs) + 1
+	offsetArg := len(queryArgs) + 2
+	query := `
+		SELECT u.display_name, p.slug, p.headline, p.city, p.country_code,
+			COALESCE((SELECT SUM(s.follower_count) FROM creator_social_accounts s WHERE s.creator_user_id = p.user_id), 0),
+			COALESCE((SELECT ROUND(AVG(s.engagement_bps))::int FROM creator_social_accounts s WHERE s.creator_user_id = p.user_id), 0),
+			COALESCE((SELECT json_agg(json_build_object('code', c.slug, 'name', CASE $` + fmt.Sprint(offsetArg+1) + ` WHEN 'en' THEN c.name_en WHEN 'ms' THEN c.name_ms ELSE c.name_id END) ORDER BY c.sort_order)
+				FROM creator_categories cc JOIN categories c ON c.id = cc.category_id WHERE cc.creator_user_id = p.user_id), '[]'::json),
+			COALESCE((SELECT array_agg(cl.language_code ORDER BY cl.language_code) FROM creator_languages cl WHERE cl.creator_user_id = p.user_id), ARRAY[]::text[]),
+			COALESCE((SELECT cp.thumbnail_url FROM creator_portfolios cp WHERE cp.creator_user_id = p.user_id AND cp.thumbnail_url IS NOT NULL ORDER BY cp.sort_order, cp.created_at LIMIT 1), ''),
+			EXISTS (SELECT 1 FROM creator_favorites f WHERE f.client_user_id = NULLIF($1, '')::uuid AND f.creator_user_id = p.user_id)
+		FROM creator_profiles p JOIN users u ON u.id = p.user_id
+		WHERE p.verification_status = 'verified' AND u.status = 'active' AND ` + where + `
+		ORDER BY ` + orderBy + ` LIMIT $` + fmt.Sprint(limitArg) + ` OFFSET $` + fmt.Sprint(offsetArg)
+	queryArgs = append(queryArgs, filters.PerPage, (filters.Page-1)*filters.PerPage, locale)
+	rows, err := repository.pool.Query(ctx, query, queryArgs...)
+	if err != nil {
+		return domain.DirectoryResult{}, fmt.Errorf("query creator directory: %w", err)
+	}
+	defer rows.Close()
+	items := make([]domain.DirectoryCard, 0, filters.PerPage)
+	for rows.Next() {
+		var item domain.DirectoryCard
+		var categoriesJSON []byte
+		if err := rows.Scan(&item.DisplayName, &item.Slug, &item.Headline, &item.City, &item.CountryCode, &item.Followers, &item.EngagementBPS, &categoriesJSON, &item.Languages, &item.CoverURL, &item.IsFavorite); err != nil {
+			return domain.DirectoryResult{}, fmt.Errorf("scan creator directory: %w", err)
+		}
+		if err := json.Unmarshal(categoriesJSON, &item.Categories); err != nil {
+			return domain.DirectoryResult{}, fmt.Errorf("decode creator categories: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return domain.DirectoryResult{}, fmt.Errorf("iterate creator directory: %w", err)
+	}
+	return domain.DirectoryResult{Items: items, Total: total}, nil
+}
+
+func directoryWhere(filters domain.DirectoryFilters, start int) (string, []any) {
+	clauses := []string{"TRUE"}
+	args := make([]any, 0, 5)
+	placeholder := func(value any) string {
+		args = append(args, value)
+		return fmt.Sprintf("$%d", start+len(args)-1)
+	}
+	if filters.Query != "" {
+		value := placeholder("%" + filters.Query + "%")
+		clauses = append(clauses, "(u.display_name ILIKE CAST("+value+" AS text) OR p.headline ILIKE CAST("+value+" AS text) OR p.bio ILIKE CAST("+value+" AS text) OR p.city ILIKE CAST("+value+" AS text))")
+	}
+	if filters.Category != "" {
+		value := placeholder(filters.Category)
+		clauses = append(clauses, "EXISTS (SELECT 1 FROM creator_categories cc JOIN categories c ON c.id = cc.category_id WHERE cc.creator_user_id = p.user_id AND c.slug = CAST("+value+" AS text))")
+	}
+	if filters.Language != "" {
+		value := placeholder(filters.Language)
+		clauses = append(clauses, "EXISTS (SELECT 1 FROM creator_languages cl WHERE cl.creator_user_id = p.user_id AND cl.language_code = CAST("+value+" AS text))")
+	}
+	if filters.CountryCode != "" {
+		value := placeholder(filters.CountryCode)
+		clauses = append(clauses, "p.country_code = CAST("+value+" AS text)")
+	}
+	if filters.FavoritesOnly {
+		clauses = append(clauses, "EXISTS (SELECT 1 FROM creator_favorites ff WHERE ff.client_user_id = NULLIF($1, '')::uuid AND ff.creator_user_id = p.user_id)")
+	}
+	return strings.Join(clauses, " AND "), args
+}
+
+func (repository *Postgres) AddFavorite(ctx context.Context, clientUserID, slug string, now time.Time) error {
+	var creatorUserID string
+	if err := repository.pool.QueryRow(ctx, `SELECT p.user_id FROM creator_profiles p JOIN users u ON u.id = p.user_id WHERE p.slug = $1 AND p.verification_status = 'verified' AND u.status = 'active'`, slug).Scan(&creatorUserID); errors.Is(err, pgx.ErrNoRows) {
+		return domain.ErrNotFound
+	} else if err != nil {
+		return fmt.Errorf("find favorite creator: %w", err)
+	}
+	_, err := repository.pool.Exec(ctx, `INSERT INTO creator_favorites (client_user_id, creator_user_id, created_at) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`, clientUserID, creatorUserID, now)
+	return err
+}
+
+func (repository *Postgres) RemoveFavorite(ctx context.Context, clientUserID, slug string) error {
+	result, err := repository.pool.Exec(ctx, `DELETE FROM creator_favorites f USING creator_profiles p WHERE f.client_user_id = $1 AND f.creator_user_id = p.user_id AND p.slug = $2`, clientUserID, slug)
+	if err != nil {
+		return fmt.Errorf("delete favorite creator: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return nil
+	}
+	return nil
 }
 
 func loadProfile(ctx context.Context, query querier, userID, locale string) (domain.Profile, error) {

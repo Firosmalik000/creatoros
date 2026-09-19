@@ -4,6 +4,10 @@ type RouteContext = { params: Promise<{ path: string[] }> };
 
 function backendPath(path: string) {
   if (path === "catalog") return "/catalog/creator-options";
+  if (path === "directory") return "/creators";
+  if (path === "favorites") return "/me/favorites";
+  const favorite = path.match(/^favorites\/([a-z0-9-]+)$/i);
+  if (favorite) return `/me/favorites/${favorite[1]}`;
   if (path === "onboarding") return "/creators/me/onboarding";
   if (path === "submit") return "/creators/me/verification-submissions";
   if (path === "admin") return "/admin/creator-verifications";
@@ -72,3 +76,4 @@ async function proxy(request: NextRequest, context: RouteContext) {
 export const GET = proxy;
 export const POST = proxy;
 export const PUT = proxy;
+export const DELETE = proxy;

@@ -33,3 +33,8 @@ Migrations run through `cmd/migrate` and are serialized with a PostgreSQL adviso
 - `creator_verification_events` is append-only audit history for submit, review, suspension, and review-reset transitions.
 - Onboarding aggregate writes replace profile-owned collections in one transaction. Any invalid reference rolls the complete write back.
 - Editing a reviewed profile returns it to `draft`. Public reads join an active user and require `verification_status = 'verified'`, so non-verified data is excluded at the database query boundary.
+
+## Phase 3 marketplace schema
+
+- `creator_favorites` stores the client-to-creator relationship with a composite primary key, cascading cleanup, and a client-role permission assignment.
+- Directory reads derive follower and engagement aggregates from creator evidence and only include active, verified profiles. Favorite writes are idempotent and never overwrite creator-owned data.

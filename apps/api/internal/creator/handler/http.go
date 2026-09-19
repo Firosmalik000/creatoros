@@ -56,16 +56,85 @@ func New(service *service.Service, logger *slog.Logger) *Handler {
 
 func (handler *Handler) Mount(router chi.Router, authenticate, requireCSRF Middleware) {
 	router.Get("/catalog/creator-options", handler.catalog)
+	router.Get("/creators", handler.directory)
 	router.Get("/creators/{slug}", handler.publicProfile)
 	router.Group(func(protected chi.Router) {
 		protected.Use(authenticate)
 		protected.Get("/creators/me/onboarding", handler.getOnboarding)
 		protected.With(requireCSRF).Put("/creators/me/onboarding", handler.saveOnboarding)
 		protected.With(requireCSRF).Post("/creators/me/verification-submissions", handler.submitVerification)
+		protected.Get("/me/favorites", handler.favorites)
+		protected.With(requireCSRF).Post("/me/favorites/{slug}", handler.addFavorite)
+		protected.With(requireCSRF).Delete("/me/favorites/{slug}", handler.removeFavorite)
 		protected.Get("/admin/creator-verifications", handler.verificationQueue)
 		protected.Get("/admin/creator-verifications/{userID}", handler.reviewProfile)
 		protected.With(requireCSRF).Post("/admin/creator-verifications/{userID}/decisions", handler.reviewVerification)
 	})
+}
+
+func (handler *Handler) directory(response http.ResponseWriter, request *http.Request) {
+	page, _ := strconv.Atoi(request.URL.Query().Get("page"))
+	perPage, _ := strconv.Atoi(request.URL.Query().Get("per_page"))
+	filters := domain.DirectoryFilters{
+		Query: request.URL.Query().Get("q"), Category: request.URL.Query().Get("category"),
+		Language: request.URL.Query().Get("language"), CountryCode: request.URL.Query().Get("country"),
+		Sort: request.URL.Query().Get("sort"), Page: page, PerPage: perPage,
+	}
+	viewerID := ""
+	if session, ok := authhandler.SessionFromContext(request.Context()); ok {
+		viewerID = session.User.ID
+	}
+	result, err := handler.service.Directory(request.Context(), filters, request.URL.Query().Get("locale"), viewerID)
+	if err != nil {
+		handler.writeServiceError(response, request, err)
+		return
+	}
+	if filters.Page < 1 {
+		filters.Page = 1
+	}
+	if filters.PerPage < 1 || filters.PerPage > 48 {
+		filters.PerPage = 24
+	}
+	writeJSON(response, http.StatusOK, dataResponse{Data: result.Items, Meta: map[string]int{
+		"page": filters.Page, "per_page": filters.PerPage, "total": result.Total,
+	}})
+}
+
+func (handler *Handler) favorites(response http.ResponseWriter, request *http.Request) {
+	page, _ := strconv.Atoi(request.URL.Query().Get("page"))
+	perPage, _ := strconv.Atoi(request.URL.Query().Get("per_page"))
+	result, err := handler.service.Favorites(request.Context(), actor(request), domain.DirectoryFilters{
+		Query: request.URL.Query().Get("q"), Category: request.URL.Query().Get("category"),
+		Language: request.URL.Query().Get("language"), CountryCode: request.URL.Query().Get("country"),
+		Sort: request.URL.Query().Get("sort"), Page: page, PerPage: perPage,
+	}, request.URL.Query().Get("locale"))
+	if err != nil {
+		handler.writeServiceError(response, request, err)
+		return
+	}
+	if page < 1 {
+		page = 1
+	}
+	if perPage < 1 || perPage > 48 {
+		perPage = 24
+	}
+	writeJSON(response, http.StatusOK, dataResponse{Data: result.Items, Meta: map[string]int{"page": page, "per_page": perPage, "total": result.Total}})
+}
+
+func (handler *Handler) addFavorite(response http.ResponseWriter, request *http.Request) {
+	if err := handler.service.AddFavorite(request.Context(), actor(request), chi.URLParam(request, "slug")); err != nil {
+		handler.writeServiceError(response, request, err)
+		return
+	}
+	response.WriteHeader(http.StatusNoContent)
+}
+
+func (handler *Handler) removeFavorite(response http.ResponseWriter, request *http.Request) {
+	if err := handler.service.RemoveFavorite(request.Context(), actor(request), chi.URLParam(request, "slug")); err != nil {
+		handler.writeServiceError(response, request, err)
+		return
+	}
+	response.WriteHeader(http.StatusNoContent)
 }
 
 func (handler *Handler) catalog(response http.ResponseWriter, request *http.Request) {

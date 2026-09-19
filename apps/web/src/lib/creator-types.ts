@@ -53,6 +53,25 @@ export type PublicCreatorProfile = Pick<
   | "portfolio"
 >;
 
+export type DirectoryCreator = {
+  display_name: string;
+  slug: string;
+  headline: string;
+  city: string;
+  country_code: string;
+  categories: CatalogItem[];
+  languages: string[];
+  followers: number;
+  engagement_bps: number;
+  cover_url?: string;
+  is_favorite: boolean;
+};
+
+export type DirectoryResponse = {
+  data: DirectoryCreator[];
+  meta: { page: number; per_page: number; total: number };
+};
+
 export type CreatorCatalog = {
   platforms: CatalogItem[];
   categories: CatalogItem[];

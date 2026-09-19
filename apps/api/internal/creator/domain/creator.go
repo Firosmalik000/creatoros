@@ -83,6 +83,36 @@ type PublicProfile struct {
 	Portfolio      []PortfolioItem `json:"portfolio"`
 }
 
+type DirectoryFilters struct {
+	Query         string
+	Category      string
+	Language      string
+	CountryCode   string
+	Sort          string
+	Page          int
+	PerPage       int
+	FavoritesOnly bool
+}
+
+type DirectoryCard struct {
+	DisplayName   string        `json:"display_name"`
+	Slug          string        `json:"slug"`
+	Headline      string        `json:"headline"`
+	City          string        `json:"city"`
+	CountryCode   string        `json:"country_code"`
+	Categories    []CatalogItem `json:"categories"`
+	Languages     []string      `json:"languages"`
+	Followers     int64         `json:"followers"`
+	EngagementBPS int           `json:"engagement_bps"`
+	CoverURL      string        `json:"cover_url,omitempty"`
+	IsFavorite    bool          `json:"is_favorite"`
+}
+
+type DirectoryResult struct {
+	Items []DirectoryCard `json:"items"`
+	Total int             `json:"total"`
+}
+
 type SaveInput struct {
 	Slug           string
 	Headline       string
@@ -116,4 +146,7 @@ type Repository interface {
 	ListVerificationQueue(context.Context, string, int, int) ([]ReviewItem, int, error)
 	ReviewVerification(context.Context, string, string, string, string, time.Time) (Profile, error)
 	FindPublicProfile(context.Context, string, string) (Profile, error)
+	ListDirectory(context.Context, DirectoryFilters, string, string) (DirectoryResult, error)
+	AddFavorite(context.Context, string, string, time.Time) error
+	RemoveFavorite(context.Context, string, string) error
 }

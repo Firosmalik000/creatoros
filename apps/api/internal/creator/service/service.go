@@ -202,6 +202,59 @@ func (service *Service) PublicProfile(ctx context.Context, slug, locale string) 
 	}, nil
 }
 
+func (service *Service) Directory(ctx context.Context, filters domain.DirectoryFilters, locale, viewerID string) (domain.DirectoryResult, error) {
+	filters.Query = strings.TrimSpace(filters.Query)
+	filters.Category = strings.ToLower(strings.TrimSpace(filters.Category))
+	filters.Language = strings.ToLower(strings.TrimSpace(filters.Language))
+	filters.CountryCode = strings.ToUpper(strings.TrimSpace(filters.CountryCode))
+	filters.Sort = strings.ToLower(strings.TrimSpace(filters.Sort))
+	if filters.Sort == "" {
+		filters.Sort = "featured"
+	}
+	if !contains([]string{"featured", "followers", "engagement", "newest"}, filters.Sort) || utf8.RuneCountInString(filters.Query) > 120 || (filters.Category != "" && !slugPattern.MatchString(filters.Category)) || (filters.Language != "" && !contains([]string{"id", "en", "ms"}, filters.Language)) || (filters.CountryCode != "" && !countryCodePattern.MatchString(filters.CountryCode)) {
+		return domain.DirectoryResult{}, fmt.Errorf("%w: directory filters", ErrValidation)
+	}
+	if filters.Page < 1 {
+		filters.Page = 1
+	}
+	if filters.PerPage < 1 || filters.PerPage > 48 {
+		filters.PerPage = 24
+	}
+	return service.repository.ListDirectory(ctx, filters, normalizeLocale(locale), viewerID)
+}
+
+func (service *Service) AddFavorite(ctx context.Context, actor domain.Actor, slug string) error {
+	if !hasPermission(actor, "marketplace.favorites.manage") {
+		return ErrForbidden
+	}
+	if err := service.repository.AddFavorite(ctx, actor.UserID, strings.ToLower(strings.TrimSpace(slug)), service.now()); errors.Is(err, domain.ErrNotFound) {
+		return ErrNotFound
+	} else if err != nil {
+		return fmt.Errorf("add creator favorite: %w", err)
+	}
+	return nil
+}
+
+func (service *Service) RemoveFavorite(ctx context.Context, actor domain.Actor, slug string) error {
+	if !hasPermission(actor, "marketplace.favorites.manage") {
+		return ErrForbidden
+	}
+	if err := service.repository.RemoveFavorite(ctx, actor.UserID, strings.ToLower(strings.TrimSpace(slug))); errors.Is(err, domain.ErrNotFound) {
+		return ErrNotFound
+	} else if err != nil {
+		return fmt.Errorf("remove creator favorite: %w", err)
+	}
+	return nil
+}
+
+func (service *Service) Favorites(ctx context.Context, actor domain.Actor, filters domain.DirectoryFilters, locale string) (domain.DirectoryResult, error) {
+	if !hasPermission(actor, "marketplace.favorites.manage") {
+		return domain.DirectoryResult{}, ErrForbidden
+	}
+	filters.FavoritesOnly = true
+	return service.Directory(ctx, filters, locale, actor.UserID)
+}
+
 func validateAndNormalize(input domain.SaveInput) (domain.SaveInput, error) {
 	input.Slug = strings.ToLower(strings.Trim(strings.TrimSpace(input.Slug), "-"))
 	input.Headline = strings.TrimSpace(input.Headline)

@@ -261,6 +261,108 @@ paths:
                 $ref: "#/components/schemas/CreatorCatalogResponse"
         "422":
           $ref: "#/components/responses/ValidationFailed"
+  /api/v1/creators:
+    get:
+      operationId: listCreatorDirectory
+      summary: Discover verified creators with search, filters, sorting, and pagination
+      tags: [Creators]
+      parameters:
+        - $ref: "#/components/parameters/LocaleQuery"
+        - { name: q, in: query, schema: { type: string, maxLength: 120 } }
+        - {
+            name: category,
+            in: query,
+            schema: { type: string, pattern: "^[a-z0-9-]+$" },
+          }
+        - {
+            name: language,
+            in: query,
+            schema: { $ref: "#/components/schemas/Locale" },
+          }
+        - {
+            name: country,
+            in: query,
+            schema: { type: string, pattern: "^[A-Z]{2}$" },
+          }
+        - {
+            name: sort,
+            in: query,
+            schema:
+              {
+                type: string,
+                enum: [featured, followers, engagement, newest],
+                default: featured,
+              },
+          }
+        - {
+            name: page,
+            in: query,
+            schema: { type: integer, minimum: 1, default: 1 },
+          }
+        - {
+            name: per_page,
+            in: query,
+            schema: { type: integer, minimum: 1, maximum: 48, default: 24 },
+          }
+      responses:
+        "200":
+          description: Paginated verified creator directory.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CreatorDirectoryResponse" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+  /api/v1/me/favorites:
+    get:
+      operationId: listCreatorFavorites
+      summary: List the authenticated client's favorite creators
+      tags: [Creators]
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/LocaleQuery"
+        - {
+            name: page,
+            in: query,
+            schema: { type: integer, minimum: 1, default: 1 },
+          }
+        - {
+            name: per_page,
+            in: query,
+            schema: { type: integer, minimum: 1, maximum: 48, default: 24 },
+          }
+      responses:
+        "200":
+          description: Favorite creator directory.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CreatorDirectoryResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/ForbiddenAction" }
+  /api/v1/me/favorites/{slug}:
+    post:
+      operationId: addCreatorFavorite
+      summary: Add a verified creator to favorites
+      tags: [Creators]
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/CreatorSlug"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204": { description: Favorite added or already present. }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/InvalidCSRF" }
+        "404": { $ref: "#/components/responses/CreatorNotFound" }
+    delete:
+      operationId: removeCreatorFavorite
+      summary: Remove a creator from favorites
+      tags: [Creators]
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/CreatorSlug"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204": { description: Favorite removed. }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/InvalidCSRF" }
   /api/v1/creators/{slug}:
     get:
       operationId: getPublicCreatorProfile
@@ -964,6 +1066,51 @@ components:
       required: [data]
       properties:
         data: { $ref: "#/components/schemas/PublicCreatorProfile" }
+    CreatorDirectoryResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/CreatorDirectoryItem" }
+        meta:
+          type: object
+          required: [page, per_page, total]
+          properties:
+            page: { type: integer }
+            per_page: { type: integer }
+            total: { type: integer }
+    CreatorDirectoryItem:
+      type: object
+      required:
+        [
+          display_name,
+          slug,
+          headline,
+          city,
+          country_code,
+          categories,
+          languages,
+          followers,
+          engagement_bps,
+          is_favorite,
+        ]
+      properties:
+        display_name: { type: string }
+        slug: { type: string }
+        headline: { type: string }
+        city: { type: string }
+        country_code: { type: string }
+        categories:
+          type: array
+          items: { $ref: "#/components/schemas/CatalogItem" }
+        languages:
+          type: array
+          items: { type: string }
+        followers: { type: integer, format: int64, minimum: 0 }
+        engagement_bps: { type: integer, minimum: 0 }
+        cover_url: { type: string, format: uri }
+        is_favorite: { type: boolean }
     CreatorOnboardingResponse:
       type: object
       required: [data]

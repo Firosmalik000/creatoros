@@ -106,18 +106,18 @@ Tidak membangun fitur marketplace sebelum seluruh exit gate Phase 0 lulus.
 
 ## Phase 3 — Marketplace
 
-**Status:** PLANNED
+**Status:** IMPLEMENTED — verification pending
 
 ### Build
 
-- [ ] Creator directory
-- [ ] Search
-- [ ] Filter
-- [ ] Sort
-- [ ] Favorites
-- [ ] Category pages
-- [ ] Creator cards
-- [ ] Creator detail
+- [x] Creator directory
+- [x] Search
+- [x] Filter
+- [x] Sort
+- [x] Favorites
+- [x] Category pages
+- [x] Creator cards
+- [x] Creator detail
 
 ### Exit gate
 
@@ -126,6 +126,12 @@ Tidak membangun fitur marketplace sebelum seluruh exit gate Phase 0 lulus.
 - [ ] Filters are shareable through the URL
 - [ ] Intended SEO pages are indexable
 - [ ] Query/filter pages do not create crawl traps
+
+### Evidence log
+
+- 2026-09-19: Marketplace directory, URL-shareable search/filter/sort, verified creator cards, favorites persistence, curated category pages, BFF routes, migration `000005_marketplace_favorites`, OpenAPI, and localized copy implemented.
+- 2026-09-19: Web typecheck, lint, formatting, UI detector, desktop/mobile responsive review, loading/empty/error state review, and mobile overflow regression verification passed. Category pages are catalog-validated, localized with canonical/hreflang/OG/CollectionPage metadata, and included in the sitemap.
+- 2026-09-19: Go API package tests and live PostgreSQL filter/favorite smoke tests require the local Go/Docker toolchain, which is unavailable in the current shell; phase remains pending until those backend gates are rerun.
 
 ## Phase 4 — Services
 
