@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
+  experimental: {
+    cpus: 2,
+  },
   allowedDevOrigins: [
     "172.30.128.1",
     "localhost",
