@@ -62,8 +62,10 @@ func Load() (Config, error) {
 		if !config.CookieSecure {
 			return Config{}, fmt.Errorf("COOKIE_SECURE cannot be false in production")
 		}
-		if err := validateProductionEmail(config); err != nil {
-			return Config{}, err
+		if config.SMTPHost != "" {
+			if err := validateProductionEmail(config); err != nil {
+				return Config{}, err
+			}
 		}
 	} else if emailConfigPresent(config) && !config.EmailDeliveryEnabled() {
 		return Config{}, fmt.Errorf("email delivery configuration is incomplete")
