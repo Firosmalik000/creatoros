@@ -54,6 +54,8 @@ func (r *PostgresRepository) CreateCampaign(ctx context.Context, clientUserID st
 	if err := row.Scan(&camp.ID, &camp.CreatedAt, &camp.UpdatedAt); err != nil {
 		return domain.CampaignDetail{}, fmt.Errorf("insert campaign: %w", err)
 	}
+	camp.Status = domain.StatusDraft
+	camp.DeadlineAt = input.DeadlineAt
 	camp.TargetCreators = camp.TargetCreatorsCount
 	camp.Deadline = camp.DeadlineAt
 
