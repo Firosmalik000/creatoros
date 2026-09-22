@@ -121,7 +121,7 @@ export default async function PublicServicePage({ params }: PageProps) {
             continue: t("continue"),
           }}
           locale={locale}
-          loginHref={`/${locale}/auth/login`}
+          loginHref={`/${locale}/checkout/${item.creator_slug}/${item.slug}`}
           packages={item.packages}
         />
       </main>

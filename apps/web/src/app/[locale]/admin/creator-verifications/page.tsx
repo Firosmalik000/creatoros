@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CreatorReviewPanel } from "@/components/creator/creator-review-panel";
 import type { AppLocale } from "@/i18n/routing";
@@ -15,22 +14,11 @@ export default async function CreatorVerificationsPage({
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "CreatorReview" });
   return (
-    <main className="creator-workspace creator-workspace--admin">
-      <header className="creator-workspace__header shell">
-        <Link className="wordmark" href={`/${locale}`}>
-          Creator<span>OS</span>
-        </Link>
-        <Link className="auth-back" href={`/${locale}/settings`}>
-          {t("accountLink")}
-        </Link>
-      </header>
-      <div className="creator-workspace__intro shell">
-        <h1>{t("title")}</h1>
-        <p>{t("body")}</p>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-1 border-b border-white/10 pb-4">
+        <h1 className="text-2xl font-bold tracking-tight text-white">{t("title")}</h1>
       </div>
-      <div className="shell">
-        <CreatorReviewPanel />
-      </div>
-    </main>
+      <CreatorReviewPanel />
+    </div>
   );
 }

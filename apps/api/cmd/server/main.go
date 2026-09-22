@@ -14,6 +14,9 @@ import (
 	creatorhandler "github.com/creatoros/platform/apps/api/internal/creator/handler"
 	creatorrepository "github.com/creatoros/platform/apps/api/internal/creator/repository"
 	creatorservice "github.com/creatoros/platform/apps/api/internal/creator/service"
+	orderhandler "github.com/creatoros/platform/apps/api/internal/order/handler"
+	orderrepository "github.com/creatoros/platform/apps/api/internal/order/repository"
+	orderservice "github.com/creatoros/platform/apps/api/internal/order/service"
 	"github.com/creatoros/platform/apps/api/internal/platform/config"
 	"github.com/creatoros/platform/apps/api/internal/platform/database"
 	platformhttp "github.com/creatoros/platform/apps/api/internal/platform/http"
@@ -22,6 +25,22 @@ import (
 	servicehandler "github.com/creatoros/platform/apps/api/internal/service/handler"
 	servicerepository "github.com/creatoros/platform/apps/api/internal/service/repository"
 	serviceservice "github.com/creatoros/platform/apps/api/internal/service/service"
+	workflowhandler "github.com/creatoros/platform/apps/api/internal/workflow/handler"
+	workflowrepository "github.com/creatoros/platform/apps/api/internal/workflow/repository"
+	workflowservice "github.com/creatoros/platform/apps/api/internal/workflow/service"
+	campaignhandler "github.com/creatoros/platform/apps/api/internal/campaign/handler"
+	campaignrepository "github.com/creatoros/platform/apps/api/internal/campaign/repository"
+	campaignservice "github.com/creatoros/platform/apps/api/internal/campaign/service"
+	paymenthandler "github.com/creatoros/platform/apps/api/internal/payment/handler"
+	paymentprovider "github.com/creatoros/platform/apps/api/internal/payment/provider"
+	paymentrepository "github.com/creatoros/platform/apps/api/internal/payment/repository"
+	paymentservice "github.com/creatoros/platform/apps/api/internal/payment/service"
+	communicationhandler "github.com/creatoros/platform/apps/api/internal/communication/handler"
+	communicationrepository "github.com/creatoros/platform/apps/api/internal/communication/repository"
+	communicationservice "github.com/creatoros/platform/apps/api/internal/communication/service"
+	adminhandler "github.com/creatoros/platform/apps/api/internal/admin/handler"
+	adminrepository "github.com/creatoros/platform/apps/api/internal/admin/repository"
+	adminservice "github.com/creatoros/platform/apps/api/internal/admin/service"
 )
 
 func main() {
@@ -75,12 +94,37 @@ func main() {
 	serviceRepository := servicerepository.NewPostgres(pool)
 	serviceService := serviceservice.New(serviceRepository)
 	serviceHandler := servicehandler.New(serviceService, logger)
+	orderRepository := orderrepository.NewPostgres(pool)
+	orderService := orderservice.New(orderRepository)
+	orderHandler := orderhandler.New(orderService, logger)
+	workflowRepository := workflowrepository.NewPostgres(pool)
+	workflowService := workflowservice.New(workflowRepository, "./uploads/deliverables")
+	workflowHandler := workflowhandler.New(workflowService, logger)
+	campaignRepository := campaignrepository.NewPostgresRepository(pool)
+	campaignService := campaignservice.NewService(campaignRepository)
+	campaignHandler := campaignhandler.New(campaignService, logger)
+	paymentRepository := paymentrepository.NewPostgresRepository(pool)
+	simulatedPaymentProvider := paymentprovider.NewSimulatedProvider("")
+	paymentService := paymentservice.New(paymentRepository, simulatedPaymentProvider)
+	paymentHandler := paymenthandler.New(paymentService, logger)
+	communicationRepository := communicationrepository.NewPostgresRepository(pool)
+	communicationService := communicationservice.New(communicationRepository)
+	communicationHandler := communicationhandler.New(communicationService, logger)
+	adminRepository := adminrepository.NewPostgresRepository(pool)
+	adminService := adminservice.NewAdminService(adminRepository)
+	adminHandler := adminhandler.New(adminService, logger)
 	server := &http.Server{
 		Addr: ":" + cfg.Port,
 		Handler: platformhttp.NewRouter(logger, platformhttp.Options{
 			Auth:           authHandler,
 			Creator:        creatorHandler,
 			Service:        serviceHandler,
+			Order:          orderHandler,
+			Workflow:       workflowHandler,
+			Campaign:       campaignHandler,
+			Payment:        paymentHandler,
+			Communication:  communicationHandler,
+			Admin:          adminHandler,
 			AllowedOrigins: cfg.AllowedOrigins,
 			Readiness: func(ctx context.Context) error {
 				return errors.Join(pool.Ping(ctx), limiter.Ping(ctx))

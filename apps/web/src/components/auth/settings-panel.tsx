@@ -165,7 +165,6 @@ export function SettingsPanel() {
         ) : null}
         <div>
           <h2>{translations("languageTitle")}</h2>
-          <p>{translations("languageBody")}</p>
         </div>
         <label className="field">
           <span>{translations("languageLabel")}</span>

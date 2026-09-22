@@ -197,8 +197,10 @@ func (service *Service) PublicProfile(ctx context.Context, slug, locale string) 
 	return domain.PublicProfile{
 		DisplayName: profile.DisplayName, Slug: profile.Slug, Headline: profile.Headline,
 		Bio: profile.Bio, City: profile.City, CountryCode: profile.CountryCode,
+		AvatarURL: profile.AvatarURL,
 		Categories: profile.Categories, Languages: profile.Languages,
 		SocialAccounts: profile.SocialAccounts, Portfolio: profile.Portfolio,
+		Stats: profile.Stats,
 	}, nil
 }
 

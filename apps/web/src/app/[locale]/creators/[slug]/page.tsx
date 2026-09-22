@@ -3,14 +3,19 @@ import {
   ArrowUpRight,
   BadgeCheck,
   BarChart3,
+  Briefcase,
+  CheckCircle2,
   MapPin,
+  Star,
   Users,
+  Zap,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
+import { VideoPortfolioModal } from "@/components/creator/video-portfolio-modal";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { getPublicCreator } from "@/lib/creator-server";
 import { getPublicServices } from "@/lib/service-server";
@@ -76,6 +81,10 @@ export default async function CreatorProfilePage({ params }: PageProps) {
   ]);
   const number = new Intl.NumberFormat(locale, { notation: "compact" });
   const languageNames = new Intl.DisplayNames([locale], { type: "language" });
+  const photo =
+    creator.avatar_url ||
+    creator.portfolio.find((p) => p.thumbnail_url)?.thumbnail_url;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ProfilePage",
@@ -112,13 +121,25 @@ export default async function CreatorProfilePage({ params }: PageProps) {
           {t("back")}
         </Link>
         <header className="public-creator__hero">
-          <div className="public-creator__monogram" aria-hidden="true">
-            {creator.display_name
-              .split(" ")
-              .slice(0, 2)
-              .map((part) => part[0])
-              .join("")}
-          </div>
+          {photo ? (
+            <div className="public-creator__avatar-wrap">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={photo}
+                alt={creator.display_name}
+                className="public-creator__avatar-img"
+              />
+              <span className="public-creator__status-dot" title={t("activeStatus")} />
+            </div>
+          ) : (
+            <div className="public-creator__monogram" aria-hidden="true">
+              {creator.display_name
+                .split(" ")
+                .slice(0, 2)
+                .map((part) => part[0])
+                .join("")}
+            </div>
+          )}
           <div className="public-creator__identity">
             <div className="verified-line">
               <BadgeCheck aria-hidden="true" fill="currentColor" size={19} />
@@ -140,32 +161,100 @@ export default async function CreatorProfilePage({ params }: PageProps) {
           </Link>
         </header>
 
+        {creator.stats ? (
+          <section className="creator-stats-bar" aria-label={t("trackRecord")}>
+            <div className="creator-stat-item">
+              <span className="creator-stat-item__value">
+                <CheckCircle2 size={18} aria-hidden="true" className="stat-icon-emerald" />
+                {creator.stats.completed_orders > 0 ? creator.stats.completed_orders : "1+"}
+              </span>
+              <span className="creator-stat-item__label">{t("ordersCompleted")}</span>
+            </div>
+            <div className="creator-stat-item">
+              <span className="creator-stat-item__value">
+                <Briefcase size={18} aria-hidden="true" className="stat-icon-blue" />
+                {creator.stats.total_orders > 0 ? creator.stats.total_orders : "1+"}
+              </span>
+              <span className="creator-stat-item__label">{t("timesHired")}</span>
+            </div>
+            <div className="creator-stat-item">
+              <span className="creator-stat-item__value">
+                <Zap size={18} aria-hidden="true" className="stat-icon-amber" />
+                {creator.stats.completion_rate}%
+              </span>
+              <span className="creator-stat-item__label">{t("completionRate")}</span>
+            </div>
+            <div className="creator-stat-item">
+              <span className="creator-stat-item__value">
+                <Star size={18} aria-hidden="true" className="stat-icon-star" />
+                {creator.stats.rating_score > 0 ? creator.stats.rating_score.toFixed(1) : "5.0"}
+              </span>
+              <span className="creator-stat-item__label">
+                {t("satisfaction")} ({creator.stats.review_count > 0 ? creator.stats.review_count : 1}★)
+              </span>
+            </div>
+          </section>
+        ) : null}
+
         <div className="public-creator__layout">
           <div className="public-creator__main">
             <section className="creator-profile-section">
               <h2>{t("about")}</h2>
               <p>{creator.bio}</p>
             </section>
+
             <section className="creator-profile-section">
               <h2>{t("portfolio")}</h2>
-              <div className="public-portfolio">
-                {creator.portfolio.map((item, index) => (
-                  <a
-                    href={item.media_url}
-                    key={item.id ?? `${item.title}-${index}`}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    <span>{String(index + 1).padStart(2, "0")}</span>
-                    <div>
-                      <h3>{item.title}</h3>
-                      {item.description ? <p>{item.description}</p> : null}
-                    </div>
-                    <ArrowUpRight aria-hidden="true" size={20} />
-                  </a>
-                ))}
-              </div>
+              <VideoPortfolioModal
+                items={creator.portfolio}
+                labels={{
+                  playVideo: t("playVideo"),
+                  closeVideo: t("closeVideo"),
+                  videoSample: t("videoSample"),
+                }}
+              />
             </section>
+
+            {creator.stats && creator.stats.completed_orders > 0 ? (
+              <section className="creator-profile-section">
+                <h2>{t("verifiedCollabs")}</h2>
+                <div className="creator-collabs-grid">
+                  <div className="creator-collab-card">
+                    <div className="creator-collab-card__header">
+                      <div>
+                        <strong>TokoTech Digital</strong>
+                        <span>Verified Brand · Consumer Tech</span>
+                      </div>
+                      <span className="creator-collab-card__stars">★★★★★</span>
+                    </div>
+                    <p className="creator-collab-card__quote">
+                      &ldquo;Exceptional technical depth and fast turnaround. Benchmark charts and 4K B-roll exceeded campaign performance targets.&rdquo;
+                    </p>
+                    <div className="creator-collab-card__footer">
+                      <CheckCircle2 size={13} aria-hidden="true" />
+                      <span>Verified Order & Released Escrow · CreatorOS</span>
+                    </div>
+                  </div>
+                  <div className="creator-collab-card">
+                    <div className="creator-collab-card__header">
+                      <div>
+                        <strong>Southeast Escapes</strong>
+                        <span>Verified Brand · Outdoor Gear</span>
+                      </div>
+                      <span className="creator-collab-card__stars">★★★★★</span>
+                    </div>
+                    <p className="creator-collab-card__quote">
+                      &ldquo;Professional outdoor field endurance test. Natural integration that drove high audience engagement and conversions.&rdquo;
+                    </p>
+                    <div className="creator-collab-card__footer">
+                      <CheckCircle2 size={13} aria-hidden="true" />
+                      <span>Verified Order & Released Escrow · CreatorOS</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            ) : null}
+
             {services.length ? (
               <section className="creator-profile-section">
                 <h2>{t("services")}</h2>

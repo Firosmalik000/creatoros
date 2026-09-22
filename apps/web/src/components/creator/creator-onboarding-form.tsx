@@ -255,7 +255,6 @@ export function CreatorOnboardingForm() {
         <section className="onboarding-section" aria-labelledby="profile-title">
           <div className="onboarding-section__heading">
             <h2 id="profile-title">{t("profileTitle")}</h2>
-            <p>{t("profileBody")}</p>
           </div>
           <div className="onboarding-field-grid">
             <label className="field field--wide">
@@ -265,6 +264,7 @@ export function CreatorOnboardingForm() {
                 minLength={3}
                 onChange={(event) => update("headline", event.target.value)}
                 required
+                placeholder="e.g. Tech Reviewer & Storyteller"
                 value={profile.headline}
               />
             </label>
@@ -275,10 +275,10 @@ export function CreatorOnboardingForm() {
                 minLength={20}
                 onChange={(event) => update("bio", event.target.value)}
                 required
-                rows={6}
+                rows={4}
+                placeholder="Introduce yourself, your audience, and your creative style..."
                 value={profile.bio}
               />
-              <small>{t("bioHelp")}</small>
             </label>
             <label className="field">
               <span>{t("slugLabel")}</span>
@@ -287,11 +287,9 @@ export function CreatorOnboardingForm() {
                 onChange={(event) => update("slug", event.target.value)}
                 pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
                 required
+                placeholder="username-or-handle"
                 value={profile.slug}
               />
-              <small>
-                {t("slugHelp", { slug: profile.slug || "nama-kreator" })}
-              </small>
             </label>
             <label className="field">
               <span>{t("cityLabel")}</span>
@@ -300,6 +298,7 @@ export function CreatorOnboardingForm() {
                 minLength={2}
                 onChange={(event) => update("city", event.target.value)}
                 required
+                placeholder="e.g. Jakarta"
                 value={profile.city}
               />
             </label>
@@ -322,7 +321,6 @@ export function CreatorOnboardingForm() {
         <section className="onboarding-section" aria-labelledby="fit-title">
           <div className="onboarding-section__heading">
             <h2 id="fit-title">{t("fitTitle")}</h2>
-            <p>{t("fitBody")}</p>
           </div>
           <fieldset className="choice-fieldset">
             <legend>{t("categoriesLabel")}</legend>
@@ -383,7 +381,6 @@ export function CreatorOnboardingForm() {
           <div className="onboarding-section__heading onboarding-section__heading--action">
             <div>
               <h2 id="social-title">{t("socialTitle")}</h2>
-              <p>{t("socialBody")}</p>
             </div>
             <button
               className="button button--quiet"
@@ -519,7 +516,6 @@ export function CreatorOnboardingForm() {
           <div className="onboarding-section__heading onboarding-section__heading--action">
             <div>
               <h2 id="portfolio-title">{t("portfolioTitle")}</h2>
-              <p>{t("portfolioBody")}</p>
             </div>
             <button
               className="button button--quiet"

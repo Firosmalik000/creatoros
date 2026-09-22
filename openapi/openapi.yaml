@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: CreatorOS API
-  version: 0.4.0
+  version: 0.10.0
   description: REST contract for the CreatorOS modular monolith.
 servers:
   - url: http://localhost:8080
@@ -18,6 +18,16 @@ tags:
     description: Creator onboarding, verification, and public profile operations.
   - name: Services
     description: Creator-owned service offers, packages, publication, and public selection.
+  - name: Orders
+    description: Order placement, state machine transitions, brief versions, and timeline.
+  - name: Workflow
+    description: Content submissions, revisions, deliverable files, and approval workflows.
+  - name: Campaigns
+    description: Client campaign creation, requirements, creator matching, invitations, and state transitions.
+  - name: Payments
+    description: Order payments, escrow management, creator wallets, payout methods, payout requests, and webhooks.
+  - name: Communication
+    description: Order and campaign messaging threads, real-time in-app notifications, and preferences.
   - name: Catalog
     description: Public creator platform and category reference data.
   - name: Administration
@@ -697,6 +707,1804 @@ paths:
           $ref: "#/components/responses/InvalidCreatorTransition"
         "422":
           $ref: "#/components/responses/ValidationFailed"
+  /api/v1/orders:
+    get:
+      operationId: listClientOrders
+      summary: List authenticated client's orders
+      tags: [Orders]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: List of client orders.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createOrder
+      summary: Place an order for a published creator service package
+      tags: [Orders]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderRequest"
+      responses:
+        "201":
+          description: Order placed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+        "404":
+          $ref: "#/components/responses/ServiceNotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/orders/{order_id}:
+    get:
+      operationId: getClientOrder
+      summary: Get order detail with brief versions and events as client
+      tags: [Orders]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/OrderID"
+      responses:
+        "200":
+          description: Order detail.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderDetailResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/OrderNotFound"
+  /api/v1/orders/{order_id}/cancel:
+    post:
+      operationId: cancelOrder
+      summary: Cancel an order before it enters progress
+      tags: [Orders]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/OrderID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderActionRequest"
+      responses:
+        "200":
+          description: Order cancelled.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+        "404":
+          $ref: "#/components/responses/OrderNotFound"
+        "409":
+          $ref: "#/components/responses/InvalidOrderTransition"
+  /api/v1/orders/{order_id}/briefs:
+    post:
+      operationId: submitOrderBrief
+      summary: Submit a new versioned brief for an order
+      tags: [Orders]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/OrderID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitBriefRequest"
+      responses:
+        "201":
+          description: New brief version submitted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BriefVersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+        "404":
+          $ref: "#/components/responses/OrderNotFound"
+        "409":
+          $ref: "#/components/responses/InvalidOrderTransition"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/creator/orders:
+    get:
+      operationId: listCreatorOrders
+      summary: List incoming orders for authenticated creator
+      tags: [Orders]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: List of creator orders.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/creator/orders/{order_id}:
+    get:
+      operationId: getCreatorOrder
+      summary: Get order detail with brief versions and events as creator
+      tags: [Orders]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/OrderID"
+      responses:
+        "200":
+          description: Creator order detail.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderDetailResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/OrderNotFound"
+  /api/v1/creator/orders/{order_id}/accept:
+    post:
+      operationId: acceptOrder
+      summary: Accept an incoming order and establish project deadline
+      tags: [Orders]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/OrderID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderActionRequest"
+      responses:
+        "200":
+          description: Order accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+        "404":
+          $ref: "#/components/responses/OrderNotFound"
+        "409":
+          $ref: "#/components/responses/InvalidOrderTransition"
+  /api/v1/creator/orders/{order_id}/decline:
+    post:
+      operationId: declineOrder
+      summary: Decline an incoming order
+      tags: [Orders]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/OrderID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderActionRequest"
+      responses:
+        "200":
+          description: Order declined.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+        "404":
+          $ref: "#/components/responses/OrderNotFound"
+        "409":
+          $ref: "#/components/responses/InvalidOrderTransition"
+  /api/v1/orders/{order_id}/submissions:
+    get:
+      operationId: getOrderWorkflow
+      summary: List submissions and workflow summary for an order
+      tags: [Workflow]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/OrderID"
+      responses:
+        "200":
+          description: Workflow summary and submission history.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowSummaryResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/OrderNotFound"
+    post:
+      operationId: submitContentDeliverables
+      summary: Submit content deliverables for an order
+      tags: [Workflow]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/OrderID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitContentRequest"
+      responses:
+        "201":
+          description: Content submission created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+        "404":
+          $ref: "#/components/responses/OrderNotFound"
+        "409":
+          $ref: "#/components/responses/InvalidOrderTransition"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/orders/{order_id}/submissions/upload:
+    post:
+      operationId: uploadDeliverableFile
+      summary: Upload a deliverable file for an order submission
+      tags: [Workflow]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/OrderID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Deliverable file uploaded to server storage.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadedFileResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+        "404":
+          $ref: "#/components/responses/OrderNotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/orders/{order_id}/submissions/{submission_id}/revision:
+    post:
+      operationId: requestSubmissionRevision
+      summary: Request a revision for a submission
+      tags: [Workflow]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/OrderID"
+        - $ref: "#/components/parameters/SubmissionID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevisionRequest"
+      responses:
+        "200":
+          description: Revision requested successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+        "404":
+          $ref: "#/components/responses/SubmissionNotFound"
+        "409":
+          $ref: "#/components/responses/RevisionLimitExceeded"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/orders/{order_id}/submissions/{submission_id}/approve:
+    post:
+      operationId: approveSubmission
+      summary: Approve submission and complete order
+      tags: [Workflow]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/OrderID"
+        - $ref: "#/components/parameters/SubmissionID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApproveContentRequest"
+      responses:
+        "200":
+          description: Submission approved and order completed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/InvalidCSRF"
+        "404":
+          $ref: "#/components/responses/SubmissionNotFound"
+        "409":
+          $ref: "#/components/responses/InvalidOrderTransition"
+  /api/v1/submissions/files/{file_id}:
+    get:
+      operationId: downloadDeliverableFile
+      summary: Download or stream deliverable file
+      tags: [Workflow]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/FileID"
+      responses:
+        "200":
+          description: Deliverable binary file stream.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/FileNotFound"
+  /api/v1/campaigns:
+    post:
+      operationId: createCampaign
+      summary: Create a new multi-step campaign draft
+      tags: [Campaigns]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCampaignRequest"
+      responses:
+        "201":
+          description: Campaign created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+    get:
+      operationId: listCampaigns
+      summary: List campaigns owned by the authenticated client
+      tags: [Campaigns]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: List of campaigns.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+  /api/v1/campaigns/explore:
+    get:
+      operationId: listPublicCampaigns
+      summary: Explore public active campaigns
+      tags: [Campaigns]
+      parameters:
+        - name: category_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of public campaigns.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignListResponse"
+  /api/v1/campaigns/{campaign_id}:
+    get:
+      operationId: getCampaign
+      summary: Get campaign details by ID
+      tags: [Campaigns]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CampaignID"
+      responses:
+        "200":
+          description: Campaign details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/CampaignNotFound"
+    put:
+      operationId: updateCampaign
+      summary: Update a draft campaign
+      tags: [Campaigns]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/CampaignID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCampaignRequest"
+      responses:
+        "200":
+          description: Campaign updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/CampaignNotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/campaigns/{campaign_id}/publish:
+    post:
+      operationId: publishCampaign
+      summary: Publish a draft campaign to active
+      tags: [Campaigns]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/CampaignID"
+      responses:
+        "200":
+          description: Campaign published successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/CampaignNotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/campaigns/{campaign_id}/cancel:
+    post:
+      operationId: cancelCampaign
+      summary: Cancel an active or draft campaign
+      tags: [Campaigns]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/CampaignID"
+      responses:
+        "200":
+          description: Campaign cancelled successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/CampaignNotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/campaigns/{campaign_id}/complete:
+    post:
+      operationId: completeCampaign
+      summary: Complete an active campaign
+      tags: [Campaigns]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/CampaignID"
+      responses:
+        "200":
+          description: Campaign completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/CampaignNotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/campaigns/{campaign_id}/matches:
+    get:
+      operationId: getCampaignMatches
+      summary: Get creator matches based on campaign requirements
+      tags: [Campaigns]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CampaignID"
+      responses:
+        "200":
+          description: Matched creators list.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignMatchesResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/CampaignNotFound"
+  /api/v1/campaigns/{campaign_id}/apply:
+    post:
+      operationId: applyToCampaign
+      summary: Apply to an open public campaign as a creator
+      tags: [Campaigns]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/CampaignID"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplyCampaignRequest"
+      responses:
+        "201":
+          description: Application submitted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignInvitationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/CampaignNotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/campaigns/{campaign_id}/invitations:
+    post:
+      operationId: createCampaignInvitation
+      summary: Invite a creator to join the campaign
+      tags: [Campaigns]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/CampaignID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInvitationRequest"
+      responses:
+        "201":
+          description: Creator invited successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignInvitationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/CampaignNotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/campaigns/{campaign_id}/invitations/{invitation_id}/select:
+    post:
+      operationId: selectCampaignCreator
+      summary: Select an accepted creator for the campaign
+      tags: [Campaigns]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/CampaignID"
+        - $ref: "#/components/parameters/InvitationID"
+      responses:
+        "200":
+          description: Creator selected for campaign.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignInvitationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/InvitationNotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+  /api/v1/creator/campaign-invitations:
+    get:
+      operationId: listCreatorCampaignInvitations
+      summary: List campaign invitations received by the authenticated creator
+      tags: [Campaigns]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Creator campaign invitations list.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignInvitationListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+  /api/v1/creator/campaign-invitations/{invitation_id}/respond:
+    post:
+      operationId: respondCampaignInvitation
+      summary: Respond to a campaign invitation (accept with pitch/rate or decline)
+      tags: [Campaigns]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/InvitationID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RespondInvitationRequest"
+      responses:
+        "200":
+          description: Response recorded successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignInvitationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/InvitationNotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  # ── Payment Paths ─────────────────────────────────────────────────────────
+  /api/v1/orders/{order_id}/payments:
+    post:
+      operationId: payOrder
+      summary: Initiate payment for an order and hold funds in escrow
+      tags: [Payments]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - name: order_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PayOrderRequest"
+      responses:
+        "201":
+          description: Payment initiated, funds held in escrow.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Order is already paid or escrow is already held.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    get:
+      operationId: getOrderPayment
+      summary: Get the current payment for an order
+      tags: [Payments]
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Payment details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/orders/{order_id}/escrow/release:
+    post:
+      operationId: releaseOrderEscrow
+      summary: Release escrow funds to creator (client approves order completion)
+      tags: [Payments]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - name: order_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Escrow released, creator balance credited.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Payment is not in escrow_held status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/creator/wallet:
+    get:
+      operationId: getCreatorWallet
+      summary: Get creator wallet balances and recent ledger history
+      tags: [Payments]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Wallet balances and ledger entries.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatorWalletResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/creator/payout-methods:
+    get:
+      operationId: getPayoutMethods
+      summary: List creator payout methods
+      tags: [Payments]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: List of payout methods.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutMethodListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+    post:
+      operationId: savePayoutMethod
+      summary: Add a new default payout method
+      tags: [Payments]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SavePayoutMethodRequest"
+      responses:
+        "201":
+          description: Payout method created and set as default.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutMethodResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /api/v1/creator/payouts:
+    get:
+      operationId: listCreatorPayouts
+      summary: List all payout requests for the authenticated creator
+      tags: [Payments]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: List of payout requests.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutRequestListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+    post:
+      operationId: requestPayout
+      summary: Request a withdrawal from creator wallet
+      tags: [Payments]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestPayoutRequest"
+      responses:
+        "201":
+          description: Payout request created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutRequestResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "422":
+          description: Validation failed or balance insufficient.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/admin/payouts/{payout_id}/process:
+    post:
+      operationId: processPayout
+      summary: Approve or reject a creator payout request (admin only)
+      tags: [Payments]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - name: payout_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProcessPayoutRequest"
+      responses:
+        "200":
+          description: Payout processed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutRequestResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /api/v1/payments/webhooks/{provider}:
+    post:
+      operationId: handlePaymentWebhook
+      summary: Receive signed payment provider webhook events
+      description: Signature is verified server-side using HMAC-SHA256. Pass raw payload and X-Signature header.
+      tags: [Payments]
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string, example: simulated }
+        - name: X-Signature
+          in: header
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event_id, event_type]
+              properties:
+                event_id:
+                  type: string
+                event_type:
+                  type: string
+                order_id:
+                  type: string
+                  format: uuid
+      responses:
+        "200":
+          description: Webhook received and processed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: received
+        "401":
+          description: Invalid webhook signature.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Duplicate webhook event.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ── Communication Paths ───────────────────────────────────────────────────
+  /api/v1/orders/{order_id}/thread:
+    get:
+      operationId: getOrderConversationThread
+      summary: Get or initialize the conversation thread for an order
+      tags: [Communication]
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Conversation thread with participants and recent messages.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationThreadResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/threads/{thread_id}/messages:
+    get:
+      operationId: listThreadMessages
+      summary: List messages in a conversation thread
+      tags: [Communication]
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: thread_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: since
+          in: query
+          required: false
+          schema: { type: string, format: date-time }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        "200":
+          description: List of messages.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: sendThreadMessage
+      summary: Post a message into a conversation thread
+      tags: [Communication]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - name: thread_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMessageRequest"
+      responses:
+        "201":
+          description: Message sent successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/notifications:
+    get:
+      operationId: listNotifications
+      summary: List in-app notifications for the authenticated user
+      tags: [Communication]
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: unread_only
+          in: query
+          required: false
+          schema: { type: boolean, default: false }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: offset
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        "200":
+          description: Paginated notification list.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/notifications/unread-count:
+    get:
+      operationId: getUnreadNotificationCount
+      summary: Get count of unread in-app notifications
+      tags: [Communication]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Unread count.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnreadNotificationCountResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/notifications/{notification_id}/read:
+    post:
+      operationId: markNotificationRead
+      summary: Mark a single in-app notification as read
+      tags: [Communication]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+        - name: notification_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "204":
+          description: Notification marked as read.
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      summary: Mark all in-app notifications as read
+      tags: [Communication]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: All notifications marked as read.
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/user/notification-preferences:
+    get:
+      operationId: getNotificationPreferences
+      summary: Get communication and notification preferences
+      tags: [Communication]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Notification preferences.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPreferencesResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+    put:
+      operationId: updateNotificationPreferences
+      summary: Update communication and notification preferences
+      tags: [Communication]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateNotificationPreferencesRequest"
+      responses:
+        "200":
+          description: Updated preferences.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPreferencesResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/communication/notifications/stream:
+    get:
+      operationId: streamNotifications
+      summary: Server-Sent Events stream for real-time unread counts and alerts
+      tags: [Communication]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: SSE event stream.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+
+  /api/v1/admin/overview:
+    get:
+      operationId: getAdminOverview
+      summary: Retrieve aggregate platform metrics and status counts
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Platform overview metrics.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOverviewResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/admin/users:
+    get:
+      operationId: listAdminUsers
+      summary: List platform users with role and status filtering
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: role
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Paginated user list.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/admin/users/{userID}:
+    get:
+      operationId: getAdminUser
+      summary: Get details for a specific user
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/AdminUserID"
+      responses:
+        "200":
+          description: User detail.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/admin/users/{userID}/status:
+    patch:
+      operationId: updateAdminUserStatus
+      summary: Update user account status (active, disabled)
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/AdminUserID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAdminUserStatusRequest"
+      responses:
+        "200":
+          description: User status updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/admin/users/{userID}/roles:
+    put:
+      operationId: updateAdminUserRoles
+      summary: Update user assigned roles
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/AdminUserID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAdminUserRolesRequest"
+      responses:
+        "200":
+          description: User roles updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/admin/orders:
+    get:
+      operationId: listAdminOrders
+      summary: Oversight list of all platform orders with dispute indicators
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Paginated admin orders.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOrderListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/admin/campaigns:
+    get:
+      operationId: listAdminCampaigns
+      summary: Oversight list of all platform campaigns
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Paginated admin campaigns.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCampaignListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/admin/disputes:
+    get:
+      operationId: listAdminDisputes
+      summary: List order disputes
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Paginated order disputes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminDisputeListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/admin/disputes/{orderID}/resolve:
+    post:
+      operationId: resolveAdminDispute
+      summary: Adjudicate an order dispute (refund client, creator payout, or dismiss)
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/AdminOrderID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResolveAdminDisputeRequest"
+      responses:
+        "200":
+          description: Dispute resolved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/admin/finance/overview:
+    get:
+      operationId: getAdminFinanceOverview
+      summary: Platform financial metrics including escrow, GMV, commissions, and payout queues
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Finance overview metrics.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminFinanceResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/admin/categories:
+    get:
+      operationId: listAdminCategories
+      summary: List all service categories including inactive ones
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Category list.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCategoryListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+    post:
+      operationId: createAdminCategory
+      summary: Create a new marketplace category
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAdminCategoryRequest"
+      responses:
+        "201":
+          description: Category created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCategoryResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/admin/categories/{categoryID}:
+    put:
+      operationId: updateAdminCategory
+      summary: Update category translations, sort order, or active flag
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/AdminCategoryID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAdminCategoryRequest"
+      responses:
+        "200":
+          description: Category updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCategoryResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/admin/audit-logs:
+    get:
+      operationId: listAdminAuditLogs
+      summary: List append-only audit trail logs
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: action
+          in: query
+          schema: { type: string }
+        - name: resource_type
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Paginated audit logs.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAuditLogListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
+  /api/v1/admin/announcements:
+    get:
+      operationId: listAdminAnnouncements
+      summary: List platform broadcast announcements
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Announcements list.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAnnouncementListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+    post:
+      operationId: createAdminAnnouncement
+      summary: Create a new platform announcement
+      tags: [Administration]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAdminAnnouncementRequest"
+      responses:
+        "201":
+          description: Announcement created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAnnouncementResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/ForbiddenAction"
+
 components:
   securitySchemes:
     sessionCookie:
@@ -750,6 +2558,46 @@ components:
         maxLength: 80
     ServiceID:
       name: service_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    OrderID:
+      name: order_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    SubmissionID:
+      name: submission_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    FileID:
+      name: file_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    CampaignID:
+      name: campaign_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    InvitationID:
+      name: invitation_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    AdminUserID:
+      name: userID
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    AdminCategoryID:
+      name: categoryID
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    AdminOrderID:
+      name: orderID
       in: path
       required: true
       schema: { type: string, format: uuid }
@@ -832,6 +2680,12 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: The requested resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
     CreatorNotFound:
       description: The creator profile does not exist or is not publicly verified.
       content:
@@ -868,6 +2722,51 @@ components:
           schema: { $ref: "#/components/schemas/ErrorResponse" }
     InvalidServiceTransition:
       description: The service cannot be published because its creator is not active and verified or the service is incomplete.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    OrderNotFound:
+      description: The order was not found.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    InvalidOrderTransition:
+      description: The order cannot transition from its current state.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    SubmissionNotFound:
+      description: The submission was not found.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    RevisionLimitExceeded:
+      description: The order has reached its allowed revision limit.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    FileNotFound:
+      description: The requested deliverable file was not found.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    PayloadTooLarge:
+      description: The uploaded file exceeds the 200MB size limit.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    UnsupportedMediaType:
+      description: The uploaded file MIME type is not allowed.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    CampaignNotFound:
+      description: The requested campaign was not found or access is denied.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    InvitationNotFound:
+      description: The requested invitation was not found or access is denied.
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ErrorResponse" }
@@ -1261,6 +3160,18 @@ components:
         portfolio:
           type: array
           items: { $ref: "#/components/schemas/PortfolioItem" }
+        avatar_url: { type: string, format: uri }
+        stats:
+          $ref: "#/components/schemas/CreatorPlatformStats"
+    CreatorPlatformStats:
+      type: object
+      required: [total_orders, completed_orders, completion_rate, rating_score, review_count]
+      properties:
+        total_orders: { type: integer, minimum: 0 }
+        completed_orders: { type: integer, minimum: 0 }
+        completion_rate: { type: integer, minimum: 0, maximum: 100 }
+        rating_score: { type: number, minimum: 0, maximum: 5 }
+        review_count: { type: integer, minimum: 0 }
     CreatorOnboarding:
       allOf:
         - $ref: "#/components/schemas/CreatorProfile"
@@ -1431,3 +3342,1546 @@ components:
             page: { type: integer }
             per_page: { type: integer }
             total: { type: integer }
+    OrderStatus:
+      type: string
+      enum:
+        - pending_acceptance
+        - accepted
+        - declined
+        - in_progress
+        - completed
+        - cancelled
+        - disputed
+    Order:
+      type: object
+      required:
+        - id
+        - client_user_id
+        - creator_user_id
+        - service_id
+        - package_id
+        - package_name
+        - package_description
+        - price_minor
+        - currency
+        - delivery_days
+        - revision_limit
+        - brief_content
+        - status
+        - created_at
+        - updated_at
+      properties:
+        id: { type: string, format: uuid }
+        client_user_id: { type: string, format: uuid }
+        client_display_name: { type: string }
+        creator_user_id: { type: string, format: uuid }
+        creator_display_name: { type: string }
+        creator_slug: { type: string }
+        service_id: { type: string, format: uuid }
+        service_title: { type: string }
+        package_id: { type: string, format: uuid }
+        package_name: { type: string }
+        package_description: { type: string }
+        price_minor: { type: integer, format: int64, minimum: 1 }
+        currency: { type: string, enum: [IDR, MYR, USD] }
+        delivery_days: { type: integer, minimum: 1, maximum: 365 }
+        revision_limit: { type: integer, minimum: 0, maximum: 20 }
+        brief_content: { type: string }
+        status: { $ref: "#/components/schemas/OrderStatus" }
+        accepted_at:
+          oneOf: [{ type: string, format: date-time }, { type: "null" }]
+        deadline_at:
+          oneOf: [{ type: string, format: date-time }, { type: "null" }]
+        cancelled_at:
+          oneOf: [{ type: string, format: date-time }, { type: "null" }]
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    BriefVersion:
+      type: object
+      required:
+        - id
+        - order_id
+        - version
+        - content
+        - submitted_by
+        - created_at
+      properties:
+        id: { type: string, format: uuid }
+        order_id: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        content: { type: string }
+        submitted_by: { type: string, format: uuid }
+        submitted_by_name: { type: string }
+        created_at: { type: string, format: date-time }
+    OrderEvent:
+      type: object
+      required:
+        - id
+        - order_id
+        - actor_user_id
+        - from_status
+        - to_status
+        - created_at
+      properties:
+        id: { type: string, format: uuid }
+        order_id: { type: string, format: uuid }
+        actor_user_id: { type: string, format: uuid }
+        actor_name: { type: string }
+        from_status: { type: string }
+        to_status: { type: string }
+        note: { type: string }
+        created_at: { type: string, format: date-time }
+    OrderDetail:
+      allOf:
+        - $ref: "#/components/schemas/Order"
+        - type: object
+          required: [briefs, events]
+          properties:
+            briefs:
+              type: array
+              items: { $ref: "#/components/schemas/BriefVersion" }
+            events:
+              type: array
+              items: { $ref: "#/components/schemas/OrderEvent" }
+    CreateOrderRequest:
+      type: object
+      additionalProperties: false
+      required: [service_id, package_id, brief_content]
+      properties:
+        service_id: { type: string, format: uuid }
+        package_id: { type: string, format: uuid }
+        brief_content: { type: string, minLength: 20, maxLength: 5000 }
+    OrderActionRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        note: { type: string, maxLength: 1000 }
+    SubmitBriefRequest:
+      type: object
+      additionalProperties: false
+      required: [content]
+      properties:
+        content: { type: string, minLength: 20, maxLength: 5000 }
+    OrderResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: "#/components/schemas/Order" }
+    OrderDetailResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: "#/components/schemas/OrderDetail" }
+    OrderListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Order" }
+    BriefVersionResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: "#/components/schemas/BriefVersion" }
+    SubmissionStatus:
+      type: string
+      enum:
+        - submitted
+        - revision_requested
+        - approved
+    SubmissionFile:
+      type: object
+      required:
+        - id
+        - submission_id
+        - file_name
+        - file_size_bytes
+        - mime_type
+        - file_path
+        - download_url
+        - created_at
+      properties:
+        id: { type: string, format: uuid }
+        submission_id: { type: string, format: uuid }
+        file_name: { type: string }
+        file_size_bytes: { type: integer, format: int64 }
+        mime_type: { type: string }
+        file_path: { type: string }
+        download_url: { type: string }
+        created_at: { type: string, format: date-time }
+    SubmissionRevision:
+      type: object
+      required:
+        - id
+        - submission_id
+        - revision_number
+        - feedback
+        - requested_by
+        - created_at
+      properties:
+        id: { type: string, format: uuid }
+        submission_id: { type: string, format: uuid }
+        revision_number: { type: integer, minimum: 1 }
+        feedback: { type: string }
+        requested_by: { type: string, format: uuid }
+        requested_by_name: { type: string }
+        created_at: { type: string, format: date-time }
+    Submission:
+      type: object
+      required:
+        - id
+        - order_id
+        - creator_user_id
+        - version
+        - status
+        - title
+        - notes
+        - files
+        - revisions
+        - created_at
+        - updated_at
+      properties:
+        id: { type: string, format: uuid }
+        order_id: { type: string, format: uuid }
+        creator_user_id: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        status: { $ref: "#/components/schemas/SubmissionStatus" }
+        title: { type: string }
+        notes: { type: string }
+        files:
+          type: array
+          items: { $ref: "#/components/schemas/SubmissionFile" }
+        revisions:
+          type: array
+          items: { $ref: "#/components/schemas/SubmissionRevision" }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    WorkflowSummary:
+      type: object
+      required:
+        - order_id
+        - order_status
+        - revision_limit
+        - revision_count
+        - submissions
+      properties:
+        order_id: { type: string, format: uuid }
+        order_status: { type: string }
+        revision_limit: { type: integer, minimum: 0 }
+        revision_count: { type: integer, minimum: 0 }
+        submissions:
+          type: array
+          items: { $ref: "#/components/schemas/Submission" }
+    SubmitFileInput:
+      type: object
+      required:
+        - file_path
+        - file_name
+        - mime_type
+        - file_size_bytes
+      properties:
+        file_path: { type: string }
+        file_name: { type: string }
+        mime_type: { type: string }
+        file_size_bytes: { type: integer, format: int64 }
+    SubmitContentRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - title
+        - files
+      properties:
+        title: { type: string, minLength: 3, maxLength: 160 }
+        notes: { type: string, maxLength: 2000 }
+        files:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items: { $ref: "#/components/schemas/SubmitFileInput" }
+    RevisionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - feedback
+      properties:
+        feedback: { type: string, minLength: 10, maxLength: 2000 }
+    ApproveContentRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        note: { type: string, maxLength: 1000 }
+    UploadedFile:
+      type: object
+      required:
+        - file_path
+        - file_name
+        - mime_type
+        - file_size_bytes
+      properties:
+        file_path: { type: string }
+        file_name: { type: string }
+        mime_type: { type: string }
+        file_size_bytes: { type: integer, format: int64 }
+    UploadedFileResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: "#/components/schemas/UploadedFile" }
+    SubmissionResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: "#/components/schemas/Submission" }
+    WorkflowSummaryResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: "#/components/schemas/WorkflowSummary" }
+    CampaignStatus:
+      type: string
+      enum:
+        - draft
+        - active
+        - completed
+        - cancelled
+    CampaignInvitationStatus:
+      type: string
+      enum:
+        - invited
+        - accepted
+        - declined
+        - selected
+        - applied
+        - rejected
+    CampaignVisibility:
+      type: string
+      enum:
+        - public
+        - private
+    CampaignRequirementInput:
+      type: object
+      additionalProperties: false
+      properties:
+        platform_id:
+          type: [string, "null"]
+          format: uuid
+        category_id:
+          type: [string, "null"]
+          format: uuid
+        min_followers:
+          type: integer
+          format: int64
+          minimum: 0
+        min_engagement_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+        deliverable_type:
+          type: string
+          maxLength: 80
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 100
+    CreateCampaignRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - title
+        - description
+        - budget_minor
+        - currency
+        - target_creators
+        - deadline
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 160
+        description:
+          type: string
+          minLength: 10
+          maxLength: 4000
+        budget_minor:
+          type: integer
+          format: int64
+          minimum: 1
+        currency:
+          type: string
+          enum: [IDR, MYR, USD]
+        target_creators:
+          type: integer
+          minimum: 1
+          maximum: 100
+        deadline:
+          type: string
+          format: date-time
+        visibility:
+          $ref: "#/components/schemas/CampaignVisibility"
+        requirements:
+          type: array
+          items:
+            $ref: "#/components/schemas/CampaignRequirementInput"
+    UpdateCampaignRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - title
+        - description
+        - budget_minor
+        - currency
+        - target_creators
+        - deadline
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 160
+        description:
+          type: string
+          minLength: 10
+          maxLength: 4000
+        budget_minor:
+          type: integer
+          format: int64
+          minimum: 1
+        currency:
+          type: string
+          enum: [IDR, MYR, USD]
+        target_creators:
+          type: integer
+          minimum: 1
+          maximum: 100
+        deadline:
+          type: string
+          format: date-time
+        visibility:
+          $ref: "#/components/schemas/CampaignVisibility"
+        requirements:
+          type: array
+          items:
+            $ref: "#/components/schemas/CampaignRequirementInput"
+    CampaignRequirement:
+      type: object
+      required:
+        - id
+        - campaign_id
+        - min_followers
+        - min_engagement_bps
+        - deliverable_type
+        - quantity
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        campaign_id:
+          type: string
+          format: uuid
+        platform_id:
+          type: [string, "null"]
+          format: uuid
+        category_id:
+          type: [string, "null"]
+          format: uuid
+        platform_name:
+          type: [string, "null"]
+        category_name:
+          type: [string, "null"]
+        min_followers:
+          type: integer
+          format: int64
+        min_engagement_bps:
+          type: integer
+        min_engagement_rate:
+          type: number
+        deliverable_type:
+          type: string
+        quantity:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+    CampaignInvitation:
+      type: object
+      required:
+        - id
+        - campaign_id
+        - creator_user_id
+        - status
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        campaign_id:
+          type: string
+          format: uuid
+        creator_user_id:
+          type: string
+          format: uuid
+        creator_name:
+          type: [string, "null"]
+        creator_slug:
+          type: [string, "null"]
+        campaign_title:
+          type: [string, "null"]
+        campaign_budget_minor:
+          type: [integer, "null"]
+          format: int64
+        campaign_currency:
+          type: [string, "null"]
+          enum: [IDR, MYR, USD, null]
+        campaign_deadline:
+          type: [string, "null"]
+          format: date-time
+        status:
+          $ref: "#/components/schemas/CampaignInvitationStatus"
+        pitch:
+          type: [string, "null"]
+        proposed_rate_minor:
+          type: [integer, "null"]
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Campaign:
+      type: object
+      required:
+        - id
+        - client_user_id
+        - title
+        - description
+        - budget_minor
+        - currency
+        - target_creators
+        - deadline
+        - status
+        - visibility
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        client_user_id:
+          type: string
+          format: uuid
+        client_name:
+          type: [string, "null"]
+        client_email:
+          type: [string, "null"]
+        title:
+          type: string
+        description:
+          type: string
+        budget_minor:
+          type: integer
+          format: int64
+        currency:
+          type: string
+          enum: [IDR, MYR, USD]
+        target_creators:
+          type: integer
+        deadline:
+          type: string
+          format: date-time
+        status:
+          $ref: "#/components/schemas/CampaignStatus"
+        visibility:
+          $ref: "#/components/schemas/CampaignVisibility"
+        requirements:
+          type: array
+          items:
+            $ref: "#/components/schemas/CampaignRequirement"
+        invitations:
+          type: array
+          items:
+            $ref: "#/components/schemas/CampaignInvitation"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ApplyCampaignRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        pitch_note:
+          type: string
+          maxLength: 1000
+        proposed_fee_minor:
+          type: integer
+          format: int64
+          minimum: 0
+    CampaignMatchedCreator:
+      type: object
+      required:
+        - creator_user_id
+        - display_name
+        - slug
+        - match_score
+      properties:
+        creator_user_id:
+          type: string
+          format: uuid
+        display_name:
+          type: string
+        slug:
+          type: string
+        avatar_url:
+          type: [string, "null"]
+        category_name:
+          type: [string, "null"]
+        platform_name:
+          type: [string, "null"]
+        follower_count:
+          type: integer
+          format: int64
+        engagement_bps:
+          type: integer
+        engagement_rate:
+          type: number
+        match_score:
+          type: integer
+    CreateInvitationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - creator_user_id
+      properties:
+        creator_user_id:
+          type: string
+          format: uuid
+    RespondInvitationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - action
+      properties:
+        action:
+          type: string
+          enum:
+            - accept
+            - decline
+        pitch:
+          type: string
+          maxLength: 2000
+        proposed_rate_minor:
+          type: integer
+          format: int64
+          minimum: 0
+    CampaignResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/Campaign"
+    CampaignListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Campaign"
+    CampaignMatchesResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/CampaignMatchedCreator"
+    CampaignInvitationResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/CampaignInvitation"
+    CampaignInvitationListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/CampaignInvitation"
+
+    # ── Payments ──────────────────────────────────────────────────────────────
+    Payment:
+      type: object
+      required: [id, client_user_id, creator_user_id, amount_minor, currency, status, payment_method, provider, provider_transaction_id, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        order_id:
+          type: string
+          format: uuid
+        campaign_id:
+          type: string
+          format: uuid
+        client_user_id:
+          type: string
+          format: uuid
+        creator_user_id:
+          type: string
+          format: uuid
+        amount_minor:
+          type: integer
+          format: int64
+          description: Payment amount in minor currency units (integer, no floating-point).
+        currency:
+          type: string
+          enum: [IDR, MYR, USD]
+        status:
+          type: string
+          enum: [pending, escrow_held, released, refunded, failed]
+        payment_method:
+          type: string
+        provider:
+          type: string
+        provider_transaction_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    LedgerEntry:
+      type: object
+      required: [id, transaction_id, reference_type, reference_id, account_type, entry_type, amount_minor, currency, description, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        transaction_id:
+          type: string
+          format: uuid
+        reference_type:
+          type: string
+          enum: [order_escrow, commission, creator_payout, refund]
+        reference_id:
+          type: string
+          format: uuid
+        account_type:
+          type: string
+          enum: [client_cash, platform_escrow, creator_balance, platform_commission, payout_reserve]
+        user_id:
+          type: string
+          format: uuid
+        entry_type:
+          type: string
+          enum: [debit, credit]
+        amount_minor:
+          type: integer
+          format: int64
+        currency:
+          type: string
+          enum: [IDR, MYR, USD]
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CreatorWallet:
+      type: object
+      required: [creator_user_id, available_balance_minor, escrow_balance_minor, total_withdrawn_minor, currency, updated_at]
+      properties:
+        creator_user_id:
+          type: string
+          format: uuid
+        available_balance_minor:
+          type: integer
+          format: int64
+        escrow_balance_minor:
+          type: integer
+          format: int64
+        total_withdrawn_minor:
+          type: integer
+          format: int64
+        currency:
+          type: string
+          enum: [IDR, MYR, USD]
+        updated_at:
+          type: string
+          format: date-time
+
+    PayoutMethod:
+      type: object
+      required: [id, creator_user_id, payout_type, bank_name, account_number, account_holder_name, is_default, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        creator_user_id:
+          type: string
+          format: uuid
+        payout_type:
+          type: string
+          enum: [bank_transfer, e_wallet]
+        bank_name:
+          type: string
+        account_number:
+          type: string
+        account_holder_name:
+          type: string
+        is_default:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PayoutRequest:
+      type: object
+      required: [id, creator_user_id, amount_minor, currency, status, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        creator_user_id:
+          type: string
+          format: uuid
+        payout_method_id:
+          type: string
+          format: uuid
+        amount_minor:
+          type: integer
+          format: int64
+        currency:
+          type: string
+          enum: [IDR, MYR, USD]
+        status:
+          type: string
+          enum: [pending, processing, completed, rejected]
+        reference_note:
+          type: string
+        processed_at:
+          type: string
+          format: date-time
+        bank_name:
+          type: string
+        account_number:
+          type: string
+        account_holder_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PayOrderRequest:
+      type: object
+      properties:
+        payment_method:
+          type: string
+          enum: [simulated, bank_transfer, credit_card, e_wallet]
+          default: simulated
+
+    SavePayoutMethodRequest:
+      type: object
+      required: [payout_type, bank_name, account_number, account_holder_name]
+      properties:
+        payout_type:
+          type: string
+          enum: [bank_transfer, e_wallet]
+        bank_name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        account_number:
+          type: string
+          minLength: 3
+          maxLength: 50
+        account_holder_name:
+          type: string
+          minLength: 2
+          maxLength: 100
+
+    RequestPayoutRequest:
+      type: object
+      required: [amount_minor, currency]
+      properties:
+        amount_minor:
+          type: integer
+          format: int64
+          description: "Minimum: IDR 100,000 | MYR 5,000 | USD 1,000 (in minor units)"
+        currency:
+          type: string
+          enum: [IDR, MYR, USD]
+        payout_method_id:
+          type: string
+          format: uuid
+
+    ProcessPayoutRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [approve, reject]
+        note:
+          type: string
+          maxLength: 500
+
+    PaymentResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/Payment"
+
+    CreatorWalletResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [wallet, ledger]
+          properties:
+            wallet:
+              $ref: "#/components/schemas/CreatorWallet"
+            ledger:
+              type: array
+              items:
+                $ref: "#/components/schemas/LedgerEntry"
+
+    PayoutMethodResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/PayoutMethod"
+
+    PayoutMethodListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PayoutMethod"
+
+    PayoutRequestResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/PayoutRequest"
+
+    PayoutRequestListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PayoutRequest"
+
+    # ── Communication Schemas ──────────────────────────────────────────────────
+    ConversationParticipant:
+      type: object
+      required: [thread_id, user_id, last_read_at, joined_at]
+      properties:
+        thread_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        user_display_name:
+          type: string
+          example: Jane Doe
+        last_read_at:
+          type: string
+          format: date-time
+        joined_at:
+          type: string
+          format: date-time
+
+    Message:
+      type: object
+      required: [id, thread_id, sender_user_id, body, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        thread_id:
+          type: string
+          format: uuid
+        sender_user_id:
+          type: string
+          format: uuid
+        sender_name:
+          type: string
+          example: Alex Brand
+        body:
+          type: string
+          example: Hello creator, looking forward to the shoot!
+        created_at:
+          type: string
+          format: date-time
+
+    ConversationThread:
+      type: object
+      required: [id, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        order_id:
+          type: string
+          format: uuid
+        campaign_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        participants:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversationParticipant"
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+
+    SendMessageRequest:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 5000
+          example: Hello, please check the lighting requirements for tomorrow.
+
+    Notification:
+      type: object
+      required: [id, user_id, kind, title, body, action_url, is_read, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+            - order_update
+            - submission_received
+            - revision_requested
+            - submission_approved
+            - payment_received
+            - escrow_released
+            - payout_update
+            - campaign_invitation
+            - campaign_response
+            - new_message
+            - system
+        title:
+          type: string
+          example: New message received
+        body:
+          type: string
+          example: Hello, please check the lighting requirements for tomorrow.
+        action_url:
+          type: string
+          example: /orders/00000000-0000-0000-0000-000000000001
+        is_read:
+          type: boolean
+          example: false
+        read_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+
+    NotificationPreferences:
+      type: object
+      required: [user_id, email_notifications, order_updates, messages, updated_at]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        email_notifications:
+          type: boolean
+          example: true
+        order_updates:
+          type: boolean
+          example: true
+        messages:
+          type: boolean
+          example: true
+        updated_at:
+          type: string
+          format: date-time
+
+    UpdateNotificationPreferencesRequest:
+      type: object
+      properties:
+        email_notifications:
+          type: boolean
+        order_updates:
+          type: boolean
+        messages:
+          type: boolean
+
+    ConversationThreadResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/ConversationThread"
+
+    MessageResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/Message"
+
+    MessageListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+
+    NotificationListResponse:
+      type: object
+      required: [data, total]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+        total:
+          type: integer
+          example: 12
+
+    UnreadNotificationCountResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [count]
+          properties:
+            count:
+              type: integer
+              example: 3
+
+    NotificationPreferencesResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/NotificationPreferences"
+
+    AdminSuccessResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [success]
+          properties:
+            success:
+              type: boolean
+              example: true
+
+    AdminOverview:
+      type: object
+      required:
+        - total_users
+        - total_creators
+        - total_clients
+        - total_orders
+        - total_campaigns
+        - total_gmv_minor
+        - escrow_held_minor
+        - commission_earned_minor
+        - currency
+        - pending_verifications
+        - active_disputes
+        - pending_payouts
+        - timestamp
+      properties:
+        total_users: { type: integer }
+        total_creators: { type: integer }
+        total_clients: { type: integer }
+        total_orders: { type: integer }
+        total_campaigns: { type: integer }
+        total_gmv_minor: { type: integer, format: int64 }
+        escrow_held_minor: { type: integer, format: int64 }
+        commission_earned_minor: { type: integer, format: int64 }
+        currency: { type: string, example: "MYR" }
+        pending_verifications: { type: integer }
+        active_disputes: { type: integer }
+        pending_payouts: { type: integer }
+        timestamp: { type: string, format: date-time }
+
+    AdminOverviewResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/AdminOverview"
+
+    AdminUser:
+      type: object
+      required:
+        - id
+        - email
+        - display_name
+        - status
+        - preferred_locale
+        - created_at
+        - roles
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        display_name: { type: string }
+        status: { type: string, enum: [active, disabled, pending_verification] }
+        preferred_locale: { type: string }
+        created_at: { type: string, format: date-time }
+        roles:
+          type: array
+          items: { type: string }
+
+    AdminUserResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/AdminUser"
+
+    AdminUserListResponse:
+      type: object
+      required: [data, total]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminUser"
+        total: { type: integer }
+
+    UpdateAdminUserStatusRequest:
+      type: object
+      required: [status, reason]
+      properties:
+        status: { type: string, enum: [active, disabled] }
+        reason: { type: string, minLength: 1 }
+
+    UpdateAdminUserRolesRequest:
+      type: object
+      required: [roles]
+      properties:
+        roles:
+          type: array
+          items: { type: string }
+          minItems: 1
+
+    AdminOrder:
+      type: object
+      required:
+        - id
+        - client_id
+        - client_email
+        - client_name
+        - creator_id
+        - creator_name
+        - service_name
+        - package_name
+        - price_minor
+        - currency
+        - status
+        - created_at
+        - has_dispute
+      properties:
+        id: { type: string, format: uuid }
+        client_id: { type: string, format: uuid }
+        client_email: { type: string }
+        client_name: { type: string }
+        creator_id: { type: string, format: uuid }
+        creator_name: { type: string }
+        service_name: { type: string }
+        package_name: { type: string }
+        price_minor: { type: integer, format: int64 }
+        currency: { type: string }
+        status: { type: string }
+        created_at: { type: string, format: date-time }
+        has_dispute: { type: boolean }
+        dispute_status: { type: string }
+        dispute_reason: { type: string }
+
+    AdminOrderListResponse:
+      type: object
+      required: [data, total]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminOrder"
+        total: { type: integer }
+
+    AdminCampaign:
+      type: object
+      required:
+        - id
+        - title
+        - client_id
+        - client_email
+        - client_name
+        - budget_minor
+        - currency
+        - target_creators
+        - status
+        - created_at
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        client_id: { type: string, format: uuid }
+        client_email: { type: string }
+        client_name: { type: string }
+        budget_minor: { type: integer, format: int64 }
+        currency: { type: string }
+        target_creators: { type: integer }
+        status: { type: string }
+        created_at: { type: string, format: date-time }
+
+    AdminCampaignListResponse:
+      type: object
+      required: [data, total]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminCampaign"
+        total: { type: integer }
+
+    AdminDispute:
+      type: object
+      required:
+        - id
+        - order_id
+        - initiator_user_id
+        - reason
+        - status
+        - created_at
+        - updated_at
+      properties:
+        id: { type: string, format: uuid }
+        order_id: { type: string, format: uuid }
+        initiator_user_id: { type: string, format: uuid }
+        reason: { type: string }
+        status: { type: string }
+        resolution_notes: { type: string }
+        resolved_by: { type: string, format: uuid }
+        resolved_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    AdminDisputeListResponse:
+      type: object
+      required: [data, total]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminDispute"
+        total: { type: integer }
+
+    ResolveAdminDisputeRequest:
+      type: object
+      required: [resolution, notes]
+      properties:
+        resolution:
+          type: string
+          enum: [client_refund, creator_payout, dismiss]
+        notes: { type: string, minLength: 1 }
+
+    AdminFinanceSummary:
+      type: object
+      required:
+        - total_gmv_minor
+        - total_escrow_minor
+        - total_commissions_minor
+        - total_payouts_settled_minor
+        - pending_payouts_count
+        - pending_payouts_sum_minor
+        - currency
+      properties:
+        total_gmv_minor: { type: integer, format: int64 }
+        total_escrow_minor: { type: integer, format: int64 }
+        total_commissions_minor: { type: integer, format: int64 }
+        total_payouts_settled_minor: { type: integer, format: int64 }
+        pending_payouts_count: { type: integer }
+        pending_payouts_sum_minor: { type: integer, format: int64 }
+        currency: { type: string }
+
+    AdminFinanceResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/AdminFinanceSummary"
+
+    AdminCategory:
+      type: object
+      required:
+        - id
+        - slug
+        - name_id
+        - name_en
+        - name_ms
+        - sort_order
+        - is_active
+        - created_at
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name_id: { type: string }
+        name_en: { type: string }
+        name_ms: { type: string }
+        sort_order: { type: integer }
+        is_active: { type: boolean }
+        created_at: { type: string, format: date-time }
+
+    AdminCategoryResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/AdminCategory"
+
+    AdminCategoryListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminCategory"
+
+    CreateAdminCategoryRequest:
+      type: object
+      required: [slug, name_id, name_en, name_ms]
+      properties:
+        slug: { type: string, minLength: 1 }
+        name_id: { type: string, minLength: 1 }
+        name_en: { type: string, minLength: 1 }
+        name_ms: { type: string, minLength: 1 }
+        sort_order: { type: integer }
+        is_active: { type: boolean }
+
+    UpdateAdminCategoryRequest:
+      type: object
+      required: [name_id, name_en, name_ms]
+      properties:
+        name_id: { type: string, minLength: 1 }
+        name_en: { type: string, minLength: 1 }
+        name_ms: { type: string, minLength: 1 }
+        sort_order: { type: integer }
+        is_active: { type: boolean }
+
+    AdminAuditLog:
+      type: object
+      required:
+        - id
+        - actor_email
+        - action
+        - resource_type
+        - resource_id
+        - details
+        - created_at
+      properties:
+        id: { type: string, format: uuid }
+        actor_user_id: { type: string, format: uuid }
+        actor_email: { type: string }
+        action: { type: string }
+        resource_type: { type: string }
+        resource_id: { type: string }
+        details: { type: object }
+        ip_address: { type: string }
+        created_at: { type: string, format: date-time }
+
+    AdminAuditLogListResponse:
+      type: object
+      required: [data, total]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminAuditLog"
+        total: { type: integer }
+
+    AdminAnnouncement:
+      type: object
+      required:
+        - id
+        - title
+        - body
+        - target_role
+        - is_active
+        - starts_at
+        - created_at
+        - updated_at
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        body: { type: string }
+        target_role: { type: string }
+        is_active: { type: boolean }
+        starts_at: { type: string, format: date-time }
+        ends_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    CreateAdminAnnouncementRequest:
+      type: object
+      required: [title, body]
+      properties:
+        title: { type: string, minLength: 1 }
+        body: { type: string, minLength: 1 }
+        target_role: { type: string }
+
+    AdminAnnouncementResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/AdminAnnouncement"
+
+    AdminAnnouncementListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminAnnouncement"

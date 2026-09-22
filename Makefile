@@ -34,4 +34,4 @@ migrate-down:
 	cd apps/api && go run ./cmd/migrate -direction down -steps 1 -dir ./migrations
 
 seed:
-	@echo "Seed data will be introduced with the first persistence-backed module."
+	cd apps/api && go run ./cmd/seed

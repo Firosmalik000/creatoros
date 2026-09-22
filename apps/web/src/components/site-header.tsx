@@ -2,15 +2,21 @@ import { ArrowUpRight, Menu } from "lucide-react";
 import Link from "next/link";
 import type { AppLocale } from "@/i18n/routing";
 import { LocaleSwitcher } from "./locale-switcher";
+import { NotificationBell } from "./communication/notification-bell";
 
 type HeaderLabels = {
   discover: string;
+  campaigns?: string;
   how: string;
   brands: string;
   creators: string;
   login: string;
   start: string;
   language: string;
+  notificationsTitle?: string;
+  markAllRead?: string;
+  emptyNotifications?: string;
+  viewAllNotifications?: string;
 };
 
 export function SiteHeader({
@@ -35,11 +41,21 @@ export function SiteHeader({
         </Link>
         <nav className="desktop-nav" aria-label="Primary navigation">
           <Link href={`/${locale}/creators`}>{labels.discover}</Link>
+          <Link href={`/${locale}/campaigns`}>{labels.campaigns ?? "Campaigns"}</Link>
           <Link href={`/${locale}#workflow`}>{labels.how}</Link>
           <Link href={`/${locale}#agency`}>{labels.brands}</Link>
           <Link href={`/${locale}#join`}>{labels.creators}</Link>
         </nav>
         <div className="header-actions">
+          <NotificationBell
+            locale={locale}
+            labels={{
+              title: labels.notificationsTitle ?? "Notifications",
+              markAllRead: labels.markAllRead ?? "Mark all as read",
+              empty: labels.emptyNotifications ?? "No notifications yet",
+              viewAll: labels.viewAllNotifications ?? "View all notifications",
+            }}
+          />
           <LocaleSwitcher locale={locale} label={labels.language} />
           <Link
             className="text-link desktop-only"

@@ -10,6 +10,7 @@ import Link from "next/link";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CreatorCard } from "@/components/creator-card";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter, type FooterLabels } from "@/components/site-footer";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { demoCreators, siteConfig } from "@/lib/site";
 
@@ -23,9 +24,11 @@ export default async function HomePage({
   const home = await getTranslations("Home");
   const nav = await getTranslations("Nav");
   const common = await getTranslations("Common");
+  const footer = await getTranslations("Footer");
 
   const navLabels = {
     discover: nav("discover"),
+    campaigns: nav("campaigns"),
     how: nav("how"),
     brands: nav("brands"),
     creators: nav("creators"),
@@ -40,6 +43,27 @@ export default async function HomePage({
     name: siteConfig.name,
     url: `${siteConfig.origin}/${locale}`,
     description: siteConfig.description,
+  };
+
+  const footerLabels: FooterLabels = {
+    tagline: footer("tagline"),
+    platform: footer("platform"),
+    discoverCreators: footer("discoverCreators"),
+    campaigns: footer("campaigns"),
+    howItWorks: footer("howItWorks"),
+    pricing: footer("pricing"),
+    forBrands: footer("forBrands"),
+    forCreators: footer("forCreators"),
+    legal: footer("legal"),
+    termsOfService: footer("termsOfService"),
+    privacyPolicy: footer("privacyPolicy"),
+    creatorAgreement: footer("creatorAgreement"),
+    clientAgreement: footer("clientAgreement"),
+    cookiePolicy: footer("cookiePolicy"),
+    support: footer("support"),
+    contactSupport: footer("contactSupport"),
+    status: footer("status"),
+    rightsReserved: footer("rightsReserved"),
   };
 
   return (
@@ -76,11 +100,9 @@ export default async function HomePage({
                 sizes="(max-width: 820px) calc(100vw - 28px), 54vw"
                 src="/images/creator-contact-sheet-v2.png"
               />
-              <span className="contact-label">{home("contactLabel")}</span>
-              <span className="contact-index">03</span>
             </div>
             <div className="hero-note">
-              <ShieldCheck aria-hidden="true" size={20} />
+              <ShieldCheck aria-hidden="true" size={18} />
               <span>{home("verified")}</span>
             </div>
           </div>
@@ -110,14 +132,12 @@ export default async function HomePage({
           <div className="section-heading">
             <div>
               <h2>{home("rosterTitle")}</h2>
-              <p>{home("rosterBody")}</p>
             </div>
             <Link className="arrow-link" href={`/${locale}/creators`}>
               {home("viewAll")}
               <ArrowRight aria-hidden="true" size={18} />
             </Link>
           </div>
-          <p className="demo-label">{home("demoLabel")}</p>
           <div className="creator-grid">
             {demoCreators.map((creator) => (
               <CreatorCard
@@ -184,15 +204,7 @@ export default async function HomePage({
         </section>
       </main>
 
-      <footer className="site-footer">
-        <div className="shell footer-inner">
-          <p className="wordmark">
-            Creator<span>OS</span>
-          </p>
-          <p>{home("footerNote")}</p>
-          <p>© {new Date().getUTCFullYear()} CreatorOS</p>
-        </div>
-      </footer>
+      <SiteFooter locale={locale} labels={footerLabels} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

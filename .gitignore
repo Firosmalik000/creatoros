@@ -13,3 +13,4 @@ bin/
 .impeccable/review/
 .playwright-cli/
 apps/api/tmp/
+backups/*.dump

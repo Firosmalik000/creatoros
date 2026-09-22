@@ -19,6 +19,14 @@ export type PortfolioItem = {
   sort_order: number;
 };
 
+export type CreatorStats = {
+  total_orders: number;
+  completed_orders: number;
+  completion_rate: number;
+  rating_score: number;
+  review_count: number;
+};
+
 export type CreatorProfile = {
   user_id: string;
   display_name: string;
@@ -27,6 +35,7 @@ export type CreatorProfile = {
   bio: string;
   city: string;
   country_code: string;
+  avatar_url?: string;
   verification_status: string;
   submitted_at: string | null;
   reviewed_at: string | null;
@@ -35,6 +44,7 @@ export type CreatorProfile = {
   languages: string[];
   social_accounts: SocialAccount[];
   portfolio: PortfolioItem[];
+  stats?: CreatorStats;
   complete?: boolean;
   missing_fields?: string[];
 };
@@ -47,10 +57,12 @@ export type PublicCreatorProfile = Pick<
   | "bio"
   | "city"
   | "country_code"
+  | "avatar_url"
   | "categories"
   | "languages"
   | "social_accounts"
   | "portfolio"
+  | "stats"
 >;
 
 export type DirectoryCreator = {

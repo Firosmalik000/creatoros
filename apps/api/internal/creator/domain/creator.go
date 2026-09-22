@@ -44,6 +44,14 @@ type PortfolioItem struct {
 	SortOrder    int    `json:"sort_order"`
 }
 
+type CreatorStats struct {
+	TotalOrders     int     `json:"total_orders"`
+	CompletedOrders int     `json:"completed_orders"`
+	CompletionRate  int     `json:"completion_rate"`
+	RatingScore     float64 `json:"rating_score"`
+	ReviewCount     int     `json:"review_count"`
+}
+
 type Profile struct {
 	UserID             string          `json:"user_id"`
 	DisplayName        string          `json:"display_name"`
@@ -52,6 +60,7 @@ type Profile struct {
 	Bio                string          `json:"bio"`
 	City               string          `json:"city"`
 	CountryCode        string          `json:"country_code"`
+	AvatarURL          string          `json:"avatar_url,omitempty"`
 	VerificationStatus string          `json:"verification_status"`
 	SubmittedAt        *time.Time      `json:"submitted_at"`
 	ReviewedAt         *time.Time      `json:"reviewed_at"`
@@ -60,6 +69,7 @@ type Profile struct {
 	Languages          []string        `json:"languages"`
 	SocialAccounts     []SocialAccount `json:"social_accounts"`
 	Portfolio          []PortfolioItem `json:"portfolio"`
+	Stats              CreatorStats    `json:"stats"`
 	CreatedAt          *time.Time      `json:"created_at"`
 	UpdatedAt          *time.Time      `json:"updated_at"`
 }
@@ -77,10 +87,12 @@ type PublicProfile struct {
 	Bio            string          `json:"bio"`
 	City           string          `json:"city"`
 	CountryCode    string          `json:"country_code"`
+	AvatarURL      string          `json:"avatar_url,omitempty"`
 	Categories     []CatalogItem   `json:"categories"`
 	Languages      []string        `json:"languages"`
 	SocialAccounts []SocialAccount `json:"social_accounts"`
 	Portfolio      []PortfolioItem `json:"portfolio"`
+	Stats              CreatorStats    `json:"stats"`
 }
 
 type DirectoryFilters struct {

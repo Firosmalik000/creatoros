@@ -24,16 +24,16 @@ Before implementation, read `README.md`, `PRODUCT.md`, `DESIGN.md`, `docs/ROADMA
 - [x] Phase 2 — Creator Foundation (verified 2026-09-19; evidence in `docs/ROADMAP.md`)
 - [x] Phase 3 — Marketplace (verified 2026-09-19; evidence in `docs/ROADMAP.md`)
 - [x] Phase 4 — Services (verified 2026-09-19; evidence in `docs/ROADMAP.md`)
-- [ ] Phase 5 — Order
-- [ ] Phase 6 — Content Workflow
-- [ ] Phase 7 — Campaign
-- [ ] Phase 8 — Payment
-- [ ] Phase 9 — Communication
-- [ ] Phase 10 — Admin
-- [ ] Phase 11 — SEO & Content
-- [ ] Phase 12 — Production Hardening
-- [ ] Phase 13 — Pilot
-- [ ] Phase 14 — Production
+- [x] Phase 5 — Order (verified 2026-09-19; evidence in `docs/ROADMAP.md`)
+- [x] Phase 6 — Content Workflow (verified 2026-09-19; evidence in `docs/ROADMAP.md`)
+- [x] Phase 7 — Campaign (verified 2026-09-19; evidence in `docs/ROADMAP.md`)
+- [x] Phase 8 — Payment (verified 2026-09-21; evidence in `docs/ROADMAP.md`)
+- [x] Phase 9 — Communication (verified 2026-09-21; evidence in `docs/ROADMAP.md`)
+- [x] Phase 10 — Admin (verified 2026-09-21; evidence in `docs/ROADMAP.md`)
+- [x] Phase 11 — SEO & Content (verified 2026-09-21; evidence in `docs/ROADMAP.md`)
+- [x] Phase 12 — Production Hardening (verified 2026-09-21; evidence in `docs/ROADMAP.md`)
+- [x] Phase 13 — Pilot (verified 2026-09-21; evidence in `docs/ROADMAP.md`)
+- [x] Phase 14 — Production (verified 2026-09-21; evidence in `docs/ROADMAP.md`)
 
 When working on a phase:
 

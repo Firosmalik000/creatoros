@@ -85,9 +85,7 @@ export default async function CreatorsPage({
           {creators("back")}
         </Link>
         <div className="directory-heading">
-          <p className="directory-kicker">{creators("kicker")}</p>
           <h1>{creators("title")}</h1>
-          <p>{creators("description")}</p>
         </div>
         <CreatorDirectory categories={catalog.categories} initial={directory} />
       </main>

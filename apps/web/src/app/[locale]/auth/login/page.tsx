@@ -1,14 +1,27 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
+import { loginAction } from "./actions";
 
-export default async function LoginPage({
-  params,
-}: {
+type Props = {
   params: Promise<{ locale: string }>;
-}) {
+  searchParams: Promise<{ email?: string; password?: string }>;
+};
+
+export default async function LoginPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const { email, password } = await searchParams;
   setRequestLocale(locale);
+
+  // If the browser previously performed an accidental GET submission with credentials:
+  if (email && password) {
+    const formData = new FormData();
+    formData.set("email", email);
+    formData.set("password", password);
+    formData.set("locale", locale);
+    await loginAction({}, formData);
+  }
+
   const translations = await getTranslations({ locale, namespace: "Auth" });
   return (
     <AuthShell
@@ -18,7 +31,7 @@ export default async function LoginPage({
       backLabel={translations("backHome")}
       proofLabel={translations("managedProof")}
     >
-      <LoginForm />
+      <LoginForm defaultEmail={email} />
     </AuthShell>
   );
 }

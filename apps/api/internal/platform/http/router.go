@@ -9,7 +9,13 @@ import (
 
 	authhandler "github.com/creatoros/platform/apps/api/internal/auth/handler"
 	creatorhandler "github.com/creatoros/platform/apps/api/internal/creator/handler"
+	orderhandler "github.com/creatoros/platform/apps/api/internal/order/handler"
 	servicehandler "github.com/creatoros/platform/apps/api/internal/service/handler"
+	workflowhandler "github.com/creatoros/platform/apps/api/internal/workflow/handler"
+	campaignhandler "github.com/creatoros/platform/apps/api/internal/campaign/handler"
+	communicationhandler "github.com/creatoros/platform/apps/api/internal/communication/handler"
+	paymenthandler "github.com/creatoros/platform/apps/api/internal/payment/handler"
+	adminhandler "github.com/creatoros/platform/apps/api/internal/admin/handler"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -18,6 +24,12 @@ type Options struct {
 	Auth           *authhandler.Handler
 	Creator        *creatorhandler.Handler
 	Service        *servicehandler.Handler
+	Order          *orderhandler.Handler
+	Workflow       *workflowhandler.Handler
+	Campaign       *campaignhandler.Handler
+	Payment        *paymenthandler.Handler
+	Communication  *communicationhandler.Handler
+	Admin          *adminhandler.Handler
 	AllowedOrigins []string
 	Readiness      func(context.Context) error
 }
@@ -54,6 +66,24 @@ func NewRouter(logger *slog.Logger, optionValues ...Options) http.Handler {
 			}
 			if options.Service != nil {
 				options.Service.Mount(api, options.Auth.Authenticate, options.Auth.RequireCSRF)
+			}
+			if options.Order != nil {
+				options.Order.Mount(api, options.Auth.Authenticate, options.Auth.RequireCSRF)
+			}
+			if options.Workflow != nil {
+				options.Workflow.Mount(api, options.Auth.Authenticate, options.Auth.RequireCSRF)
+			}
+			if options.Campaign != nil {
+				options.Campaign.Mount(api, options.Auth.Authenticate, options.Auth.RequireCSRF)
+			}
+			if options.Payment != nil {
+				options.Payment.Mount(api, options.Auth.Authenticate, options.Auth.RequireCSRF)
+			}
+			if options.Communication != nil {
+				options.Communication.Mount(api, options.Auth.Authenticate, options.Auth.RequireCSRF)
+			}
+			if options.Admin != nil {
+				options.Admin.Mount(api, options.Auth.Authenticate, options.Auth.RequireCSRF)
 			}
 		})
 	}
