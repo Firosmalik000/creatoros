@@ -116,10 +116,13 @@ services:
       - api
     networks:
       - internal-net
+      - dokploy-network
 
 networks:
   internal-net:
     driver: bridge
+  dokploy-network:
+    external: true
 
 volumes:
   postgres-prod-data:

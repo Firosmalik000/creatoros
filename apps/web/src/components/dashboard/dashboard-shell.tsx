@@ -33,6 +33,7 @@ interface DashboardShellProps {
     announcements?: string;
     audit?: string;
     settings?: string;
+    profileAndSocial?: string;
     backToMarketplace?: string;
     logout?: string;
     language?: string;

@@ -26,4 +26,5 @@ COPY --from=builder --chown=nextjs:nodejs /workspace/apps/web/public ./apps/web/
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 CMD ["node", "apps/web/server.js"]

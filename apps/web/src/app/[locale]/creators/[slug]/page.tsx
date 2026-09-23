@@ -15,6 +15,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter, type FooterLabels } from "@/components/site-footer";
 import { VideoPortfolioModal } from "@/components/creator/video-portfolio-modal";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { getPublicCreator } from "@/lib/creator-server";
@@ -75,15 +76,37 @@ export default async function CreatorProfilePage({ params }: PageProps) {
     getPublicServices(slug),
   ]);
   if (!creator) notFound();
-  const [t, nav] = await Promise.all([
+  const [t, nav, footer] = await Promise.all([
     getTranslations("CreatorProfile"),
     getTranslations("Nav"),
+    getTranslations("Footer"),
   ]);
   const number = new Intl.NumberFormat(locale, { notation: "compact" });
   const languageNames = new Intl.DisplayNames([locale], { type: "language" });
   const photo =
     creator.avatar_url ||
     creator.portfolio.find((p) => p.thumbnail_url)?.thumbnail_url;
+
+  const footerLabels: FooterLabels = {
+    tagline: footer("tagline"),
+    platform: footer("platform"),
+    discoverCreators: footer("discoverCreators"),
+    campaigns: footer("campaigns"),
+    howItWorks: footer("howItWorks"),
+    pricing: footer("pricing"),
+    forBrands: footer("forBrands"),
+    forCreators: footer("forCreators"),
+    legal: footer("legal"),
+    termsOfService: footer("termsOfService"),
+    privacyPolicy: footer("privacyPolicy"),
+    creatorAgreement: footer("creatorAgreement"),
+    clientAgreement: footer("clientAgreement"),
+    cookiePolicy: footer("cookiePolicy"),
+    support: footer("support"),
+    contactSupport: footer("contactSupport"),
+    status: footer("status"),
+    rightsReserved: footer("rightsReserved"),
+  };
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -113,6 +136,8 @@ export default async function CreatorProfilePage({ params }: PageProps) {
           login: nav("login"),
           start: nav("start"),
           language: nav("language"),
+          dashboard: nav("dashboard"),
+          logout: nav("logout"),
         }}
       />
       <main id="main-content" className="public-creator shell">
@@ -343,6 +368,7 @@ export default async function CreatorProfilePage({ params }: PageProps) {
           </aside>
         </div>
       </main>
+      <SiteFooter locale={locale} labels={footerLabels} />
       <script
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),

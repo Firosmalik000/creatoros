@@ -12,6 +12,9 @@
     "login": "Log masuk",
     "start": "Mulakan kempen",
     "exploreCampaigns": "Terokai Kempen",
+    "profileAndSocial": "Profil & Media Sosial",
+    "dashboard": "Dashboard",
+    "logout": "Log keluar",
     "language": "Bahasa"
   },
   "Home": {
@@ -165,6 +168,17 @@
     "languageLabel": "Bahasa pilihan",
     "saveSettings": "Simpan tetapan",
     "settingsSaved": "Tetapan berjaya disimpan.",
+    "tabAccount": "Akaun & Keutamaan",
+    "tabProfile": "Profil Pencipta",
+    "tabSocial": "Media Sosial & Pengikut",
+    "tabPortfolio": "Portfolio",
+    "navProfileSocial": "Profil & Media Sosial",
+    "accountDetails": "Butiran Akaun Pengguna",
+    "accountSummary": "Ringkasan Akaun",
+    "saveChanges": "Simpan Perubahan",
+    "saving": "Menyimpan…",
+    "logoutAction": "Log Keluar",
+    "loggingOut": "Sedang log keluar…",
     "errors": {
       "invalid_request": "Permintaan tidak dapat dibaca. Semak medan dan cuba lagi.",
       "validation_failed": "Sesetengah medan tidak sah. Semak borang dan cuba lagi.",

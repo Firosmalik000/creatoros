@@ -12,6 +12,9 @@
     "login": "Masuk",
     "start": "Mulai campaign",
     "exploreCampaigns": "Eksplorasi Kampanye",
+    "profileAndSocial": "Profil & Media Sosial",
+    "dashboard": "Dashboard",
+    "logout": "Keluar",
     "language": "Bahasa"
   },
   "Home": {
@@ -165,6 +168,17 @@
     "languageLabel": "Bahasa pilihan",
     "saveSettings": "Simpan pengaturan",
     "settingsSaved": "Pengaturan berhasil disimpan.",
+    "tabAccount": "Akun & Preferensi",
+    "tabProfile": "Profil Kreator",
+    "tabSocial": "Media Sosial & Follower",
+    "tabPortfolio": "Portofolio",
+    "navProfileSocial": "Profil & Media Sosial",
+    "accountDetails": "Detail Akun Pengguna",
+    "accountSummary": "Ringkasan Akun",
+    "saveChanges": "Simpan Perubahan",
+    "saving": "Menyimpan…",
+    "logoutAction": "Keluar dari Akun",
+    "loggingOut": "Sedang keluar…",
     "errors": {
       "invalid_request": "Permintaan tidak dapat dibaca. Periksa isian lalu coba lagi.",
       "validation_failed": "Ada isian yang belum valid. Periksa kembali formulir.",

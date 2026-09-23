@@ -70,7 +70,7 @@ export function SiteFooter({
               </li>
               <li>
                 <Link
-                  href={`/${locale}/campaigns`}
+                  href={`/${locale}/campaigns/explore`}
                   className="text-white/70 hover:text-white transition-colors"
                 >
                   {labels.campaigns ?? "Brand Campaigns"}

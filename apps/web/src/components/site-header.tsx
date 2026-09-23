@@ -2,7 +2,8 @@ import { ArrowUpRight, Menu } from "lucide-react";
 import Link from "next/link";
 import type { AppLocale } from "@/i18n/routing";
 import { LocaleSwitcher } from "./locale-switcher";
-import { NotificationBell } from "./communication/notification-bell";
+import { getCurrentUser, type CurrentUser } from "@/lib/auth-server";
+import { HeaderUserMenu } from "./header-user-menu";
 
 type HeaderLabels = {
   discover: string;
@@ -13,19 +14,26 @@ type HeaderLabels = {
   login: string;
   start: string;
   language: string;
+  dashboard?: string;
+  logout?: string;
   notificationsTitle?: string;
   markAllRead?: string;
   emptyNotifications?: string;
   viewAllNotifications?: string;
 };
 
-export function SiteHeader({
+export async function SiteHeader({
   locale,
   labels,
+  currentUser: providedUser,
 }: {
   locale: AppLocale;
   labels: HeaderLabels;
+  currentUser?: CurrentUser | null;
 }) {
+  const currentUser =
+    providedUser !== undefined ? providedUser : await getCurrentUser();
+
   return (
     <header className="site-header">
       <a className="skip-link" href="#main-content">
@@ -41,35 +49,42 @@ export function SiteHeader({
         </Link>
         <nav className="desktop-nav" aria-label="Primary navigation">
           <Link href={`/${locale}/creators`}>{labels.discover}</Link>
-          <Link href={`/${locale}/campaigns`}>{labels.campaigns ?? "Campaigns"}</Link>
           <Link href={`/${locale}#workflow`}>{labels.how}</Link>
           <Link href={`/${locale}#agency`}>{labels.brands}</Link>
           <Link href={`/${locale}#join`}>{labels.creators}</Link>
         </nav>
         <div className="header-actions">
-          <NotificationBell
-            locale={locale}
-            labels={{
-              title: labels.notificationsTitle ?? "Notifications",
-              markAllRead: labels.markAllRead ?? "Mark all as read",
-              empty: labels.emptyNotifications ?? "No notifications yet",
-              viewAll: labels.viewAllNotifications ?? "View all notifications",
-            }}
-          />
           <LocaleSwitcher locale={locale} label={labels.language} />
-          <Link
-            className="text-link desktop-only"
-            href={`/${locale}/auth/login`}
-          >
-            {labels.login}
-          </Link>
-          <Link
-            className="button button--dark desktop-only"
-            href={`/${locale}/auth/register`}
-          >
-            {labels.start}
-            <ArrowUpRight aria-hidden="true" size={17} />
-          </Link>
+          {currentUser ? (
+            <HeaderUserMenu
+              locale={locale}
+              user={{
+                displayName: currentUser.display_name,
+                email: currentUser.email,
+                roles: currentUser.roles,
+              }}
+              labels={{
+                dashboard: labels.dashboard ?? "Dashboard",
+                logout: labels.logout ?? "Keluar",
+              }}
+            />
+          ) : (
+            <>
+              <Link
+                className="text-link desktop-only"
+                href={`/${locale}/auth/login`}
+              >
+                {labels.login}
+              </Link>
+              <Link
+                className="button button--dark desktop-only"
+                href={`/${locale}/auth/register`}
+              >
+                {labels.start}
+                <ArrowUpRight aria-hidden="true" size={17} />
+              </Link>
+            </>
+          )}
           <button
             className="mobile-menu"
             type="button"

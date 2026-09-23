@@ -12,6 +12,9 @@
     "login": "Log in",
     "start": "Start a campaign",
     "exploreCampaigns": "Explore Campaigns",
+    "profileAndSocial": "Profile & Social Media",
+    "dashboard": "Dashboard",
+    "logout": "Sign out",
     "language": "Language"
   },
   "Home": {
@@ -161,6 +164,17 @@
     "languageLabel": "Preferred language",
     "saveSettings": "Save settings",
     "settingsSaved": "Settings saved successfully.",
+    "tabAccount": "Account & Preferences",
+    "tabProfile": "Creator Profile",
+    "tabSocial": "Social Media & Followers",
+    "tabPortfolio": "Portfolio",
+    "navProfileSocial": "Profile & Social Media",
+    "accountDetails": "User Account Details",
+    "accountSummary": "Account Summary",
+    "saveChanges": "Save Changes",
+    "saving": "Saving…",
+    "logoutAction": "Sign Out",
+    "loggingOut": "Signing out…",
     "errors": {
       "invalid_request": "The request could not be read. Check the fields and try again.",
       "validation_failed": "Some fields are invalid. Review the form and try again.",

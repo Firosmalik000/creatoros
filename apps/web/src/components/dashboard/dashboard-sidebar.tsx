@@ -64,6 +64,7 @@ interface DashboardSidebarProps {
     announcements?: string;
     audit?: string;
     settings?: string;
+    profileAndSocial?: string;
     backToMarketplace?: string;
     exploreCampaigns?: string;
     logout?: string;
@@ -178,6 +179,11 @@ export function DashboardSidebar({
             href: `/${locale}/creator/services`,
             label: labels.services || "My Services",
             icon: Sparkles,
+          },
+          {
+            href: `/${locale}/settings?tab=profile`,
+            label: labels.profileAndSocial || "Profil & Medsos",
+            icon: BadgeCheck,
           },
         ],
       },
@@ -306,9 +312,10 @@ export function DashboardSidebar({
               </h3>
               <ul className="space-y-1">
                 {group.items.map((item) => {
+                  const itemPath = item.href.split("?")[0];
                   const isActive = item.exact
                     ? pathname === item.href
-                    : pathname.startsWith(item.href);
+                    : pathname === itemPath || pathname.startsWith(`${itemPath}/`);
                   const Icon = item.icon;
 
                   return (

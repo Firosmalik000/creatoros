@@ -1,9 +1,12 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { SettingsPanel } from "@/components/auth/settings-panel";
-import { NotificationSettingsForm } from "@/components/communication/notification-settings-form";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { UnifiedSettingsView } from "@/components/settings/unified-settings-view";
+import { getCurrentUser } from "@/lib/auth-server";
 import { getServerNotificationPreferences } from "@/lib/communication-server";
+import type { AppLocale } from "@/i18n/routing";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
@@ -14,49 +17,72 @@ export default async function SettingsPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const translations = await getTranslations({ locale, namespace: "Auth" });
-  const notifTranslations = await getTranslations({
-    locale,
-    namespace: "NotificationSettings",
-  });
-  const initialPreferences = await getServerNotificationPreferences();
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    redirect(`/${locale}/auth/login?redirect=/${locale}/settings`);
+  }
+
+  const [authT, navT, notifT, orderT, initialPreferences] = await Promise.all([
+    getTranslations({ locale, namespace: "Auth" }),
+    getTranslations({ locale, namespace: "Nav" }),
+    getTranslations({ locale, namespace: "NotificationSettings" }),
+    getTranslations({ locale, namespace: "Order" }),
+    getServerNotificationPreferences(),
+  ]);
+
+  const role = currentUser.roles.includes("admin")
+    ? "admin"
+    : currentUser.roles.includes("creator")
+    ? "creator"
+    : "client";
+
+  const labels = {
+    overview: "Overview",
+    orders: role === "creator" ? "Active Orders" : orderT("workspaceNav.orders"),
+    services: "My Services",
+    campaigns: role === "creator" ? "Campaign Invites" : navT("campaigns"),
+    wallet: "Wallet & Payouts",
+    settings: authT("settingsTitle"),
+    profileAndSocial: navT("profileAndSocial"),
+    backToMarketplace: navT("discover"),
+    exploreCampaigns: navT("exploreCampaigns"),
+    language: navT("language"),
+  };
+
+  const notificationLabels = {
+    title: notifT("title"),
+    subtitle: notifT("subtitle"),
+    emailNotifications: notifT("emailNotifications"),
+    emailNotificationsDesc: notifT("emailNotificationsDesc"),
+    orderUpdates: notifT("orderUpdates"),
+    orderUpdatesDesc: notifT("orderUpdatesDesc"),
+    messages: notifT("messages"),
+    messagesDesc: notifT("messagesDesc"),
+    save: notifT("save"),
+    saving: notifT("saving"),
+    saved: notifT("saved"),
+    saveError: notifT("saveError"),
+  };
 
   return (
-    <main className="settings-surface">
-      <header className="settings-header shell">
-        <Link className="wordmark" href={`/${locale}`}>
-          Creator<span>OS</span>
-        </Link>
-        <Link className="auth-back" href={`/${locale}`}>
-          {translations("backHome")}
-        </Link>
-      </header>
-      <div className="settings-main shell">
-        <header className="settings-heading">
-          <h1>{translations("settingsTitle")}</h1>
-          <p>{translations("settingsBody")}</p>
-        </header>
-        <SettingsPanel />
-        <div className="settings-notification-card">
-          <NotificationSettingsForm
-            initialPreferences={initialPreferences}
-            labels={{
-              title: notifTranslations("title"),
-              subtitle: notifTranslations("subtitle"),
-              emailNotifications: notifTranslations("emailNotifications"),
-              emailNotificationsDesc: notifTranslations("emailNotificationsDesc"),
-              orderUpdates: notifTranslations("orderUpdates"),
-              orderUpdatesDesc: notifTranslations("orderUpdatesDesc"),
-              messages: notifTranslations("messages"),
-              messagesDesc: notifTranslations("messagesDesc"),
-              save: notifTranslations("save"),
-              saving: notifTranslations("saving"),
-              saved: notifTranslations("saved"),
-              saveError: notifTranslations("saveError"),
-            }}
-          />
-        </div>
-      </div>
-    </main>
+    <DashboardShell
+      locale={locale as AppLocale}
+      role={role}
+      user={{
+        displayName: currentUser.display_name,
+        email: currentUser.email,
+        roles: currentUser.roles,
+      }}
+      labels={labels}
+    >
+      <Suspense fallback={<div className="p-8 text-white/50 text-sm">Memuat pengaturan...</div>}>
+        <UnifiedSettingsView
+          user={currentUser}
+          initialNotificationPreferences={initialPreferences}
+          notificationLabels={notificationLabels}
+        />
+      </Suspense>
+    </DashboardShell>
   );
 }
