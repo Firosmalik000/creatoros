@@ -93,7 +93,7 @@ export default async function CreatorsPage({
   };
 
   return (
-    <div className="min-h-screen bg-[#070a10] text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#070a10] text-slate-900 dark:text-slate-100 flex flex-col transition-colors">
       <SiteHeader
         locale={locale}
         labels={{
@@ -112,7 +112,7 @@ export default async function CreatorsPage({
       <main className="flex-1 shell max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16" id="main-content">
         {/* Navigation Breadcrumb */}
         <Link
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors mb-6 group px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 w-fit"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors mb-6 group px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 w-fit min-h-[44px]"
           href={`/${locale}`}
         >
           <ArrowLeft aria-hidden="true" size={14} className="group-hover:-translate-x-1 transition-transform" />
@@ -120,37 +120,37 @@ export default async function CreatorsPage({
         </Link>
 
         {/* Directory Hero Header */}
-        <div className="relative mb-10 overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e1628] via-[#090d18] to-[#070a10] border border-white/10 p-6 sm:p-10 shadow-2xl">
+        <div className="relative mb-10 overflow-hidden rounded-3xl bg-gradient-to-br from-white via-slate-50 to-blue-50/20 dark:from-[#0e1628] dark:via-[#090d18] dark:to-[#070a10] border border-slate-200 dark:border-white/10 p-6 sm:p-10 shadow-sm dark:shadow-2xl">
           {/* Subtle Ambient Decorative Glows */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
           <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
 
           <div className="relative z-10 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-4">
-              <Sparkles size={13} className="text-blue-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 mb-4">
+              <Sparkles size={13} className="text-blue-500 dark:text-blue-400 animate-pulse" />
               <span>{creators("kicker")}</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
               {creators("title")}
             </h1>
 
-            <p className="mt-3 text-base sm:text-lg text-slate-400 leading-relaxed max-w-2xl">
+            <p className="mt-3 text-base sm:text-lg text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl">
               {creators("description")}
             </p>
 
             {/* Platform Trust Highlights Row */}
-            <div className="mt-6 pt-6 border-t border-white/10 flex flex-wrap items-center gap-4 sm:gap-8 text-xs sm:text-sm text-slate-300">
+            <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center gap-4 sm:gap-8 text-xs sm:text-sm text-slate-700 dark:text-slate-300">
               <div className="flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+                <CheckCircle2 size={16} className="text-emerald-500 dark:text-emerald-400 shrink-0" />
                 <span className="font-medium">100% Agency Quality Checked</span>
               </div>
               <div className="flex items-center gap-2">
-                <ShieldCheck size={16} className="text-blue-400 shrink-0" />
+                <ShieldCheck size={16} className="text-blue-500 dark:text-blue-400 shrink-0" />
                 <span className="font-medium">Escrow Protection</span>
               </div>
               <div className="flex items-center gap-2">
-                <Users size={16} className="text-purple-400 shrink-0" />
+                <Users size={16} className="text-purple-500 dark:text-purple-400 shrink-0" />
                 <span className="font-medium">ID · MY · SG Coverage</span>
               </div>
             </div>

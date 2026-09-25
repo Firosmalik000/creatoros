@@ -115,13 +115,13 @@ export function SiteMobileMenu({
             role="dialog"
             aria-modal="true"
             aria-label="Mobile Navigation"
-            className="absolute top-full left-0 right-0 w-full z-50 bg-[#070a10]/95 backdrop-blur-xl border-b border-white/10 shadow-2xl p-6 flex flex-col gap-4 max-h-[calc(100vh-73px)] overflow-y-auto md:hidden animate-in fade-in slide-in-from-top-2 duration-200"
+            className="absolute top-full left-0 right-0 w-full z-50 bg-white/95 dark:bg-[#070a10]/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 shadow-2xl p-6 flex flex-col gap-4 max-h-[calc(100vh-73px)] overflow-y-auto md:hidden animate-in fade-in slide-in-from-top-2 duration-200"
           >
             <nav className="flex flex-col gap-2" aria-label="Mobile Primary Navigation">
               <Link
                 href={`/${locale}/creators`}
                 onClick={() => setIsOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-slate-200 hover:text-white hover:bg-white/5 font-semibold text-base transition-colors"
+                className="px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 font-semibold text-base transition-colors"
               >
                 {labels.discover}
               </Link>
@@ -129,7 +129,7 @@ export function SiteMobileMenu({
                 <Link
                   href={`/${locale}/campaigns/explore`}
                   onClick={() => setIsOpen(false)}
-                  className="px-3 py-2.5 rounded-lg text-slate-200 hover:text-white hover:bg-white/5 font-semibold text-base transition-colors"
+                  className="px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 font-semibold text-base transition-colors"
                 >
                   {labels.campaigns}
                 </Link>
@@ -137,30 +137,30 @@ export function SiteMobileMenu({
               <Link
                 href={`/${locale}#workflow`}
                 onClick={() => setIsOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-slate-200 hover:text-white hover:bg-white/5 font-semibold text-base transition-colors"
+                className="px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 font-semibold text-base transition-colors"
               >
                 {labels.how}
               </Link>
               <Link
                 href={`/${locale}#agency`}
                 onClick={() => setIsOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-slate-200 hover:text-white hover:bg-white/5 font-semibold text-base transition-colors"
+                className="px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 font-semibold text-base transition-colors"
               >
                 {labels.brands}
               </Link>
               <Link
                 href={`/${locale}#join`}
                 onClick={() => setIsOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-slate-200 hover:text-white hover:bg-white/5 font-semibold text-base transition-colors"
+                className="px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 font-semibold text-base transition-colors"
               >
                 {labels.creators}
               </Link>
             </nav>
 
             {/* Language Switcher inside Mobile Menu */}
-            <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm">
-              <div className="flex items-center gap-2 text-slate-300 font-medium text-xs">
-                <Languages size={15} className="text-blue-400" />
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm">
+              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 font-medium text-xs">
+                <Languages size={15} className="text-blue-500" />
                 <span>{labels.language ?? "Bahasa"}</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -178,7 +178,7 @@ export function SiteMobileMenu({
                         className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
                           isActive
                             ? "bg-blue-600 text-white shadow-sm"
-                            : "text-slate-400 hover:text-white hover:bg-white/10"
+                            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/10"
                         }`}
                       >
                         {text}
@@ -189,7 +189,7 @@ export function SiteMobileMenu({
               </div>
             </div>
 
-            <div className="h-px bg-white/10 my-1" />
+            <div className="h-px bg-slate-200 dark:bg-white/10 my-1" />
 
             {/* Actions Section */}
             <div className="flex flex-col gap-3">
@@ -198,16 +198,16 @@ export function SiteMobileMenu({
                   <Link
                     href={dashboardHref}
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors group"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 transition-colors group"
                   >
                     <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center font-bold text-xs text-white shrink-0 group-hover:scale-105 transition-transform">
                       {currentUser.displayName ? currentUser.displayName.charAt(0).toUpperCase() : "U"}
                     </div>
                     <div className="flex flex-col overflow-hidden text-left">
-                      <span className="font-semibold text-white text-sm truncate">
+                      <span className="font-semibold text-slate-900 dark:text-white text-sm truncate">
                         {currentUser.displayName || "User"}
                       </span>
-                      <span className="text-[11px] text-blue-400 uppercase tracking-wider font-mono">
+                      <span className="text-[11px] text-blue-500 dark:text-blue-400 uppercase tracking-wider font-mono">
                         {primaryRole}
                       </span>
                     </div>

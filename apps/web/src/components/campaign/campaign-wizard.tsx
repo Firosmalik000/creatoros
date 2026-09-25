@@ -325,24 +325,24 @@ export function CampaignWizard({ catalog, locale }: CampaignWizardProps) {
           </div>
 
           <div className="campaign-form-group pt-2">
-            <label className="campaign-form-label mb-2 block font-semibold text-white">
+            <label className="campaign-form-label mb-2 block font-semibold text-slate-900 dark:text-white">
               Visibilitas Campaign
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setVisibility("public")}
-                className={`p-4 rounded-xl border text-left transition-all ${
+                className={`p-4 rounded-xl border text-left transition-all min-h-[44px] cursor-pointer ${
                   visibility === "public"
-                    ? "border-blue-500 bg-blue-500/15 text-white ring-1 ring-blue-500"
-                    : "border-white/10 bg-white/[0.02] text-white/70 hover:border-white/20"
+                    ? "border-blue-500 bg-blue-500/10 dark:bg-blue-500/15 text-slate-900 dark:text-white ring-1 ring-blue-500"
+                    : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-slate-700 dark:text-white/70 hover:border-blue-300 dark:hover:border-white/20"
                 }`}
               >
-                <div className="flex items-center gap-2 font-semibold text-sm text-white">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                <div className="flex items-center gap-2 font-semibold text-sm text-slate-900 dark:text-white">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                   Publik (Terbuka untuk Pelamar)
                 </div>
-                <p className="text-xs text-white/50 mt-1.5 leading-relaxed">
+                <p className="text-xs text-slate-500 dark:text-white/50 mt-1.5 leading-relaxed">
                   Ditampilkan di eksplorasi campaign. Seluruh kreator terverifikasi dapat melihat brief dan mengajukan proposal lamaran langsung.
                 </p>
               </button>
@@ -350,17 +350,17 @@ export function CampaignWizard({ catalog, locale }: CampaignWizardProps) {
               <button
                 type="button"
                 onClick={() => setVisibility("private")}
-                className={`p-4 rounded-xl border text-left transition-all ${
+                className={`p-4 rounded-xl border text-left transition-all min-h-[44px] cursor-pointer ${
                   visibility === "private"
-                    ? "border-blue-500 bg-blue-500/15 text-white ring-1 ring-blue-500"
-                    : "border-white/10 bg-white/[0.02] text-white/70 hover:border-white/20"
+                    ? "border-blue-500 bg-blue-500/10 dark:bg-blue-500/15 text-slate-900 dark:text-white ring-1 ring-blue-500"
+                    : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-slate-700 dark:text-white/70 hover:border-blue-300 dark:hover:border-white/20"
                 }`}
               >
-                <div className="flex items-center gap-2 font-semibold text-sm text-white">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+                <div className="flex items-center gap-2 font-semibold text-sm text-slate-900 dark:text-white">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
                   Privat (Hanya Undangan)
                 </div>
-                <p className="text-xs text-white/50 mt-1.5 leading-relaxed">
+                <p className="text-xs text-slate-500 dark:text-white/50 mt-1.5 leading-relaxed">
                   Hanya kreator yang Anda pilih dan undang secara langsung dari sistem rekomendasi yang dapat melihat dan mengakses campaign ini.
                 </p>
               </button>

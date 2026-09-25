@@ -5,6 +5,7 @@ import { LocaleSwitcher } from "./locale-switcher";
 import { getCurrentUser, type CurrentUser } from "@/lib/auth-server";
 import { HeaderUserMenu } from "./header-user-menu";
 import { SiteMobileMenu } from "./site-mobile-menu";
+import { ThemeToggle } from "./theme-toggle";
 
 type HeaderLabels = {
   discover: string;
@@ -55,6 +56,7 @@ export async function SiteHeader({
           <Link href={`/${locale}#join`}>{labels.creators}</Link>
         </nav>
         <div className="header-actions">
+          <ThemeToggle />
           <LocaleSwitcher
             locale={locale}
             label={labels.language}

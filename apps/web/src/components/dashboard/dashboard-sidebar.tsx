@@ -343,7 +343,7 @@ export function DashboardSidebar({
                       <Link
                         href={item.href}
                         onClick={onCloseMobile}
-                        className={`group flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                        className={`group flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium min-h-[44px] transition-all duration-150 ${
                           isActive
                             ? "bg-blue-50 dark:bg-[#1e293b] text-blue-600 dark:text-white shadow-xs border border-blue-100 dark:border-white/10"
                             : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/[0.04]"

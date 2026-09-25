@@ -169,10 +169,10 @@ export function CreatorDirectory({
                 <button
                   key={cat.code}
                   onClick={() => handleCategoryClick(cat.code)}
-                  className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 border ${
+                  className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 border min-h-[40px] ${
                     isSelected
                       ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/20 border-blue-400/40"
-                      : "bg-white/5 hover:bg-white/10 text-slate-300 border-white/10 hover:border-white/20"
+                      : "bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
                   }`}
                 >
                   <span>{cat.name}</span>
@@ -185,7 +185,7 @@ export function CreatorDirectory({
       )}
 
       {/* Modern Filter Command Bar */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-[#0d1424]/90 backdrop-blur-xl border border-white/10 shadow-xl space-y-4">
+      <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0d1424]/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl space-y-4">
         {/* Search Input Row */}
         <form onSubmit={submitSearch} className="flex gap-2 sm:gap-3" role="search">
           <div className="relative flex-1">
@@ -199,13 +199,13 @@ export function CreatorDirectory({
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("searchPlaceholder")}
               value={query}
-              className="w-full h-11 pl-10 pr-9 rounded-xl bg-black/40 border border-white/10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="w-full h-11 pl-10 pr-9 rounded-xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
             />
             {query && (
               <button
                 type="button"
                 onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white"
                 aria-label="Clear search"
               >
                 <X size={15} />
@@ -221,9 +221,9 @@ export function CreatorDirectory({
         </form>
 
         {/* Secondary Filter Dropdowns & Sort */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/5">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-white/5">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider pr-2">
+            <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider pr-2">
               <SlidersHorizontal size={14} />
               <span>{t("filterLabel")}</span>
             </div>
@@ -233,7 +233,7 @@ export function CreatorDirectory({
               aria-label={t("countryLabel")}
               onChange={(e) => updateFilters({ country: e.target.value })}
               value={filters.country}
-              className="h-9 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
+              className="h-10 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer min-h-[40px]"
             >
               <option value="" className="bg-white dark:bg-[#0e1424] text-slate-900 dark:text-white">
                 {t("allCountries")}
@@ -250,7 +250,7 @@ export function CreatorDirectory({
               aria-label={t("languageLabel")}
               onChange={(e) => updateFilters({ language: e.target.value })}
               value={filters.language}
-              className="h-9 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
+              className="h-10 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer min-h-[40px]"
             >
               <option value="" className="bg-white dark:bg-[#0e1424] text-slate-900 dark:text-white">
                 {t("allLanguages")}
@@ -271,7 +271,7 @@ export function CreatorDirectory({
               aria-label={t("sortLabel")}
               onChange={(e) => updateFilters({ sort: e.target.value })}
               value={filters.sort}
-              className="h-9 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
+              className="h-10 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer min-h-[40px]"
             >
               <option value="featured" className="bg-white dark:bg-[#0e1424] text-slate-900 dark:text-white">
                 {t("sort.featured")}
@@ -389,18 +389,18 @@ export function CreatorDirectory({
             aria-label={t("previousPage")}
             disabled={currentPage <= 1}
             onClick={() => setPage(currentPage - 1)}
-            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
           >
             <ChevronLeft size={16} />
           </button>
-          <span className="text-xs sm:text-sm font-semibold text-slate-400 px-3">
+          <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 px-3">
             {t("pageOf", { page: currentPage, total: totalPages })}
           </span>
           <button
             aria-label={t("nextPage")}
             disabled={currentPage >= totalPages}
             onClick={() => setPage(currentPage + 1)}
-            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
           >
             <ChevronRight size={16} />
           </button>
@@ -472,10 +472,10 @@ function DirectoryCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.96 }}
       whileHover={{ y: -6, transition: { duration: 0.2, ease: "easeOut" } }}
-      className="group relative flex flex-col rounded-3xl bg-gradient-to-b from-[#0e1628] to-[#0a0f1d] border border-white/10 hover:border-blue-500/40 hover:shadow-2xl hover:shadow-blue-500/10 overflow-hidden transition-all duration-300"
+      className="group relative flex flex-col rounded-3xl bg-white dark:bg-gradient-to-b dark:from-[#0e1628] dark:to-[#0a0f1d] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none hover:border-blue-500/40 hover:shadow-xl dark:hover:shadow-blue-500/10 overflow-hidden transition-all duration-300"
     >
       {/* Visual Header / Cover */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900">
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
         <Link
           href={`/${locale}/creators/${creator.slug}`}
           className="block w-full h-full"
@@ -489,17 +489,17 @@ function DirectoryCard({
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-tr from-blue-900/60 to-indigo-900/60 text-white/80 font-black text-4xl">
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-tr from-blue-600/30 to-indigo-600/30 dark:from-blue-900/60 dark:to-indigo-900/60 text-slate-800 dark:text-white/80 font-black text-4xl">
               {initials}
             </div>
           )}
         </Link>
 
         {/* Ambient Gradient Vignette */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0e1628] via-transparent to-black/30 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-black/30 dark:from-[#0e1628] pointer-events-none" />
 
         {/* Verified Badge */}
-        <div className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 backdrop-blur-md text-emerald-300 border border-emerald-400/30 shadow-md">
+        <div className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 backdrop-blur-md text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 dark:border-emerald-400/30 shadow-md">
           <Check size={12} className="stroke-[3]" />
           <span>{t("verified")}</span>
         </div>
@@ -512,14 +512,14 @@ function DirectoryCard({
           onClick={toggleFavorite}
           className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all duration-200 border ${
             favorite
-              ? "bg-amber-500/20 border-amber-400/50 text-amber-300 scale-105"
-              : "bg-black/40 border-white/20 text-white/70 hover:text-white hover:bg-black/60"
+              ? "bg-amber-500/20 border-amber-400/50 text-amber-500 dark:text-amber-300 scale-105"
+              : "bg-white/80 dark:bg-black/40 border-slate-200 dark:border-white/20 text-slate-700 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-black/60"
           }`}
         >
           <Bookmark
             size={15}
             fill={favorite ? "currentColor" : "none"}
-            className={favorite ? "text-amber-400" : ""}
+            className={favorite ? "text-amber-500 dark:text-amber-400" : ""}
           />
         </button>
       </div>
@@ -529,19 +529,19 @@ function DirectoryCard({
         <div className="space-y-2">
           {/* Creator Name & Title */}
           <div>
-            <h2 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
               <Link href={`/${locale}/creators/${creator.slug}`}>
                 {creator.display_name}
               </Link>
             </h2>
-            <p className="mt-1 text-xs text-slate-400 line-clamp-2 leading-relaxed">
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
               {creator.headline}
             </p>
           </div>
 
           {/* Location */}
-          <div className="flex items-center gap-1.5 text-xs text-slate-400 pt-1">
-            <MapPin size={13} className="text-slate-500 shrink-0" />
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 pt-1">
+            <MapPin size={13} className="text-slate-400 dark:text-slate-500 shrink-0" />
             <span>
               {creator.city}, {country}
             </span>
@@ -552,7 +552,7 @@ function DirectoryCard({
             {creator.categories.slice(0, 3).map((category) => (
               <span
                 key={category.code}
-                className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-white/5 border border-white/10 text-slate-300"
+                className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300"
               >
                 {category.name}
               </span>
@@ -560,22 +560,22 @@ function DirectoryCard({
           </div>
         </div>
 
-        <div className="space-y-3 pt-3 border-t border-white/5">
+        <div className="space-y-3 pt-3 border-t border-slate-200/80 dark:border-white/5">
           {/* Metrics Bento Row */}
-          <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-black/30 border border-white/5 text-center">
+          <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-black/30 border border-slate-200/80 dark:border-white/5 text-center">
             <div className="space-y-0.5">
               <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold flex items-center justify-center gap-1">
                 <Users size={11} />
                 <span>{t("followers")}</span>
               </span>
-              <p className="text-sm font-bold text-white font-mono">{followers}</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white font-mono">{followers}</p>
             </div>
-            <div className="space-y-0.5 border-l border-white/5">
+            <div className="space-y-0.5 border-l border-slate-200/80 dark:border-white/5">
               <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold flex items-center justify-center gap-1">
                 <TrendingUp size={11} />
                 <span>{t("engagement")}</span>
               </span>
-              <p className="text-sm font-bold text-emerald-400 font-mono">
+              <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 font-mono">
                 {engagement}
               </p>
             </div>
@@ -590,7 +590,7 @@ function DirectoryCard({
           {/* View Profile Action */}
           <Link
             href={`/${locale}/creators/${creator.slug}`}
-            className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/5 group-hover:bg-blue-600/20 text-xs font-semibold text-slate-300 group-hover:text-blue-300 border border-white/10 group-hover:border-blue-500/30 transition-all duration-200"
+            className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-100 hover:bg-blue-50 dark:bg-white/5 dark:hover:bg-blue-600/20 text-xs font-semibold text-slate-700 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-300 border border-slate-200 hover:border-blue-300 dark:border-white/10 dark:hover:border-blue-500/30 transition-all duration-200 min-h-[44px]"
           >
             <span>{t("viewProfileShort")}</span>
             <ArrowUpRight
