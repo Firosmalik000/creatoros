@@ -4,7 +4,7 @@ services:
   postgres:
     image: postgres:18-alpine
     restart: always
-    command: ["postgres", "-c", "shared_buffers=256MB", "-c", "work_mem=16MB", "-c", "max_connections=100"]
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "work_mem=4MB", "-c", "max_connections=30"]
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-creatoros}
       POSTGRES_USER: ${POSTGRES_USER:-creatoros}
@@ -13,9 +13,9 @@ services:
       - postgres-prod-data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 5s
+      interval: 30s
       timeout: 5s
-      retries: 10
+      retries: 5
     networks:
       - internal-net
 
@@ -114,19 +114,6 @@ services:
       API_BASE_URL: http://api:8080/api/v1
     depends_on:
       - api
-    networks:
-      - internal-net
-      - dokploy-network
-
-  adminer:
-    image: adminer:latest
-    restart: always
-    environment:
-      ADMINER_DEFAULT_SERVER: postgres
-    ports:
-      - "8085:8080"
-    depends_on:
-      - postgres
     networks:
       - internal-net
       - dokploy-network

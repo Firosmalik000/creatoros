@@ -102,16 +102,6 @@ services:
     depends_on:
       - api
 
-  adminer:
-    image: adminer:latest
-    restart: always
-    environment:
-      ADMINER_DEFAULT_SERVER: postgres
-    ports:
-      - "${ADMINER_PORT:-8085}:8080"
-    depends_on:
-      - postgres
-
 volumes:
   postgres-data:
   redis-data:
