@@ -92,23 +92,9 @@ func (factory *Factory) encrypt(recipient, kind, locale string, expiresAt time.T
 }
 
 func verificationCopy(locale, link string) (string, string) {
-	switch locale {
-	case "en":
-		return "Verify your CreatorOS email", "Complete your registration by opening this link:\n\n" + link + "\n\nThis link expires in 24 hours."
-	case "ms":
-		return "Sahkan e-mel CreatorOS anda", "Lengkapkan pendaftaran dengan membuka pautan ini:\n\n" + link + "\n\nPautan ini tamat tempoh dalam 24 jam."
-	default:
-		return "Verifikasi email CreatorOS Anda", "Selesaikan pendaftaran dengan membuka tautan berikut:\n\n" + link + "\n\nTautan ini berlaku selama 24 jam."
-	}
+	return getVerificationEmail(locale, link)
 }
 
 func passwordResetCopy(locale, link string) (string, string) {
-	switch locale {
-	case "en":
-		return "Reset your CreatorOS password", "Reset your password by opening this link:\n\n" + link + "\n\nThis link expires in 30 minutes. Ignore this email if you did not request it."
-	case "ms":
-		return "Tetapkan semula kata laluan CreatorOS", "Tetapkan semula kata laluan dengan membuka pautan ini:\n\n" + link + "\n\nPautan ini tamat tempoh dalam 30 minit. Abaikan e-mel ini jika anda tidak memintanya."
-	default:
-		return "Atur ulang kata sandi CreatorOS", "Atur ulang kata sandi dengan membuka tautan berikut:\n\n" + link + "\n\nTautan ini berlaku selama 30 menit. Abaikan email ini jika Anda tidak memintanya."
-	}
+	return getPasswordResetEmail(locale, link)
 }

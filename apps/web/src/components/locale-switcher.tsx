@@ -11,12 +11,14 @@ const localeLabels: Record<AppLocale, string> = {
 export function LocaleSwitcher({
   locale,
   label,
+  className,
 }: {
   locale: AppLocale;
   label: string;
+  className?: string;
 }) {
   return (
-    <div className="locale-switcher" aria-label={label}>
+    <div className={`locale-switcher ${className ?? ""}`.trim()} aria-label={label}>
       <Languages aria-hidden="true" size={16} strokeWidth={2} />
       {Object.entries(localeLabels).map(([code, text]) => (
         <Link

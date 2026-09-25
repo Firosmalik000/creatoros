@@ -55,7 +55,11 @@ export async function SiteHeader({
           <Link href={`/${locale}#join`}>{labels.creators}</Link>
         </nav>
         <div className="header-actions">
-          <LocaleSwitcher locale={locale} label={labels.language} />
+          <LocaleSwitcher
+            locale={locale}
+            label={labels.language}
+            className="desktop-only"
+          />
           {currentUser ? (
             <HeaderUserMenu
               locale={locale}
@@ -96,6 +100,7 @@ export async function SiteHeader({
               creators: labels.creators,
               login: labels.login,
               start: labels.start,
+              language: labels.language,
               dashboard: labels.dashboard,
               logout: labels.logout,
             }}

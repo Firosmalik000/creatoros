@@ -58,7 +58,19 @@ func (sender *SMTPSender) Send(ctx context.Context, recipient, subject, body str
 			return fmt.Errorf("authenticate SMTP: %w", err)
 		}
 	}
-	if err := client.Mail(sender.config.From); err != nil {
+	fromEnvelope := sender.config.From
+	fromHeader := sender.config.From
+	if strings.Contains(sender.config.From, "<") && strings.Contains(sender.config.From, ">") {
+		start := strings.Index(sender.config.From, "<")
+		end := strings.Index(sender.config.From, ">")
+		if start < end {
+			fromEnvelope = strings.TrimSpace(sender.config.From[start+1 : end])
+		}
+	} else if sender.config.From != "" {
+		fromHeader = fmt.Sprintf("CreatorOS <%s>", sender.config.From)
+	}
+
+	if err := client.Mail(fromEnvelope); err != nil {
 		return fmt.Errorf("set SMTP sender: %w", err)
 	}
 	if err := client.Rcpt(recipient); err != nil {
@@ -68,10 +80,16 @@ func (sender *SMTPSender) Send(ctx context.Context, recipient, subject, body str
 	if err != nil {
 		return fmt.Errorf("open SMTP body: %w", err)
 	}
-	message := "From: " + sender.config.From + "\r\n" +
+
+	contentType := "text/plain; charset=UTF-8"
+	if strings.Contains(body, "<html") || strings.Contains(body, "<!DOCTYPE") {
+		contentType = "text/html; charset=UTF-8"
+	}
+
+	message := "From: " + fromHeader + "\r\n" +
 		"To: " + recipient + "\r\n" +
 		"Subject: " + subject + "\r\n" +
-		"MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n" + body
+		"MIME-Version: 1.0\r\nContent-Type: " + contentType + "\r\n\r\n" + body
 	buffer := bufio.NewWriter(writer)
 	if _, err := buffer.WriteString(message); err != nil {
 		_ = writer.Close()

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, ArrowUpRight, LayoutDashboard, LogOut, Loader2 } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Menu, X, ArrowUpRight, LayoutDashboard, Languages } from "lucide-react";
 import type { AppLocale } from "@/i18n/routing";
 
 export interface SiteMobileMenuProps {
@@ -16,6 +16,7 @@ export interface SiteMobileMenuProps {
     creators: string;
     login: string;
     start: string;
+    language?: string;
     dashboard?: string;
     logout?: string;
   };
@@ -26,14 +27,18 @@ export interface SiteMobileMenuProps {
   } | null;
 }
 
+const localeLabels: Record<AppLocale, string> = {
+  id: "ID",
+  en: "EN",
+  ms: "MY",
+};
+
 export function SiteMobileMenu({
   locale,
   labels,
   currentUser,
 }: SiteMobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
-  const router = useRouter();
   const pathname = usePathname();
 
   // Reset menu when route changes
@@ -74,20 +79,11 @@ export function SiteMobileMenu({
     dashboardHref = `/${locale}/creator/orders`;
   }
 
-  async function handleLogout() {
-    try {
-      setLoggingOut(true);
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: { Accept: "application/json" },
-      });
-      setIsOpen(false);
-      router.push(`/${locale}`);
-      router.refresh();
-    } catch {
-      setLoggingOut(false);
-    }
-  }
+  const primaryRole = currentUser?.roles?.includes("admin")
+    ? "Admin"
+    : currentUser?.roles?.includes("creator")
+      ? "Creator"
+      : "Client";
 
   return (
     <>
@@ -161,25 +157,61 @@ export function SiteMobileMenu({
               </Link>
             </nav>
 
+            {/* Language Switcher inside Mobile Menu */}
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm">
+              <div className="flex items-center gap-2 text-slate-300 font-medium text-xs">
+                <Languages size={15} className="text-blue-400" />
+                <span>{labels.language ?? "Bahasa"}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {(Object.entries(localeLabels) as [AppLocale, string][]).map(
+                  ([code, text]) => {
+                    const isActive = code === locale;
+                    return (
+                      <Link
+                        key={code}
+                        href={`/${code}`}
+                        hrefLang={
+                          code === "id" ? "id-ID" : code === "ms" ? "ms-MY" : "en"
+                        }
+                        onClick={() => setIsOpen(false)}
+                        className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                          isActive
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-slate-400 hover:text-white hover:bg-white/10"
+                        }`}
+                      >
+                        {text}
+                      </Link>
+                    );
+                  }
+                )}
+              </div>
+            </div>
+
             <div className="h-px bg-white/10 my-1" />
 
             {/* Actions Section */}
             <div className="flex flex-col gap-3">
               {currentUser ? (
                 <>
-                  <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center font-bold text-xs text-white shrink-0">
+                  <Link
+                    href={dashboardHref}
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors group"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center font-bold text-xs text-white shrink-0 group-hover:scale-105 transition-transform">
                       {currentUser.displayName ? currentUser.displayName.charAt(0).toUpperCase() : "U"}
                     </div>
-                    <div className="flex flex-col overflow-hidden">
+                    <div className="flex flex-col overflow-hidden text-left">
                       <span className="font-semibold text-white text-sm truncate">
                         {currentUser.displayName || "User"}
                       </span>
-                      <span className="text-xs text-slate-400 truncate">
-                        {currentUser.email}
+                      <span className="text-[11px] text-blue-400 uppercase tracking-wider font-mono">
+                        {primaryRole}
                       </span>
                     </div>
-                  </div>
+                  </Link>
 
                   <Link
                     href={dashboardHref}
@@ -189,20 +221,6 @@ export function SiteMobileMenu({
                     <LayoutDashboard size={16} />
                     <span>{labels.dashboard ?? "Dashboard"}</span>
                   </Link>
-
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    disabled={loggingOut}
-                    className="button button--quiet w-full justify-center text-sm font-semibold text-rose-400 hover:text-rose-300 hover:border-rose-500/30"
-                  >
-                    {loggingOut ? (
-                      <Loader2 size={16} className="animate-spin text-rose-400" />
-                    ) : (
-                      <LogOut size={16} />
-                    )}
-                    <span>{labels.logout ?? "Keluar"}</span>
-                  </button>
                 </>
               ) : (
                 <>
