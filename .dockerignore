@@ -1,20 +1,41 @@
+# Version control
 .git
+.gitignore
 .github
-.codex
-.agents
-.impeccable
-.env
-.env.*
-!.env.example
+
+# Dependencies & caches
 node_modules
 **/node_modules
+.npm
+**/.npm
+.next
 **/.next
-**/bin
-**/coverage
-**/*.log
-docs
-openapi
-README.md
-PRODUCT.md
-DESIGN.md
-AGENTS.md
+apps/web/.next
+apps/web/out
+
+# Go build & test cache
+apps/api/bin
+apps/api/tmp
+*.test
+*.out
+*.exe
+
+# Local environment & secret files
+.env*.local
+.env
+!.env.example
+
+# Temporary & log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Documentation & workspace config not needed in production image
+docs/
+.gemini/
+*.md
+!README.md

@@ -16,9 +16,15 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 FROM alpine:3.21
 RUN apk add --no-cache ca-certificates tzdata
+RUN addgroup -S -g 1001 creatoros && adduser -S -u 1001 -G creatoros creatoros
 COPY --from=builder /bin/creatoros-api /creatoros-api
 COPY --from=builder /bin/creatoros-migrate /creatoros-migrate
 COPY --from=builder /bin/creatoros-seed /creatoros-seed
 COPY apps/api/migrations /migrations
+USER creatoros
 EXPOSE 8080
+
+HEALTHCHECK --interval=15s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:8080/health/live || exit 1
+
 ENTRYPOINT ["/creatoros-api"]
