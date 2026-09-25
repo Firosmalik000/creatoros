@@ -1,9 +1,10 @@
-import { ArrowUpRight, Menu } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import type { AppLocale } from "@/i18n/routing";
 import { LocaleSwitcher } from "./locale-switcher";
 import { getCurrentUser, type CurrentUser } from "@/lib/auth-server";
 import { HeaderUserMenu } from "./header-user-menu";
+import { SiteMobileMenu } from "./site-mobile-menu";
 
 type HeaderLabels = {
   discover: string;
@@ -85,13 +86,29 @@ export async function SiteHeader({
               </Link>
             </>
           )}
-          <button
-            className="mobile-menu"
-            type="button"
-            aria-label="Open navigation menu"
-          >
-            <Menu aria-hidden="true" size={22} />
-          </button>
+          <SiteMobileMenu
+            locale={locale}
+            labels={{
+              discover: labels.discover,
+              campaigns: labels.campaigns,
+              how: labels.how,
+              brands: labels.brands,
+              creators: labels.creators,
+              login: labels.login,
+              start: labels.start,
+              dashboard: labels.dashboard,
+              logout: labels.logout,
+            }}
+            currentUser={
+              currentUser
+                ? {
+                    displayName: currentUser.display_name,
+                    email: currentUser.email,
+                    roles: currentUser.roles,
+                  }
+                : null
+            }
+          />
         </div>
       </div>
     </header>

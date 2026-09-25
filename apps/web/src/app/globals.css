@@ -2855,6 +2855,18 @@ h3 {
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
   color: #ffffff;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all 0.18s ease;
+}
+
+.mobile-menu:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.mobile-menu:active {
+  transform: scale(0.95);
 }
 
 /* ==========================================================================
