@@ -118,6 +118,19 @@ services:
       - internal-net
       - dokploy-network
 
+  adminer:
+    image: adminer:latest
+    restart: always
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+      - "8085:8080"
+    depends_on:
+      - postgres
+    networks:
+      - internal-net
+      - dokploy-network
+
 networks:
   internal-net:
     driver: bridge
