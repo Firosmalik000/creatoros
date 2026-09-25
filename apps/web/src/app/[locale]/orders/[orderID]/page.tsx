@@ -72,7 +72,7 @@ export default async function ClientOrderDetailPage({ params }: PageProps) {
   return (
     <div className="space-y-5">
       <Link
-        className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
         href={`/${locale}/orders`}
       >
         <ArrowLeft aria-hidden="true" size={16} /> {t("backToOrders")}
@@ -82,7 +82,7 @@ export default async function ClientOrderDetailPage({ params }: PageProps) {
         {/* Compact, clean header */}
         <header className="order-detail-header">
           <div>
-            <span className="order-detail-header__number">
+            <span className="order-detail-header__number break-all">
               {t("orderNumber")}: {detail.id}
             </span>
             <h1>{detail.service_title || detail.package_name}</h1>

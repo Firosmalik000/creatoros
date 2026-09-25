@@ -69,7 +69,7 @@ export default async function CampaignExplorePage({ params }: PageProps) {
   return (
     <>
       <SiteHeader locale={locale} labels={navLabels} currentUser={currentUser} />
-      <main id="main-content" className="min-h-screen bg-[#070a10]">
+      <main id="main-content" className="min-h-screen bg-slate-50 dark:bg-[#070a10] text-slate-900 dark:text-slate-100 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <CampaignExploreView
             initialCampaigns={campaignsResult.data}

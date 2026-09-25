@@ -142,7 +142,7 @@ export function ServiceManager() {
             )
           : [response.data, ...current];
       });
-      setIsDrawerOpen(false);
+      closeDrawer();
     } catch (caught) {
       setError(caught as ApiError);
     } finally {
@@ -151,8 +151,10 @@ export function ServiceManager() {
   }
 
   async function togglePublication(service: CreatorService) {
-    const nextAction = service.status === "published" ? "unpublish" : "publish";
+    const nextAction =
+      service.status === "published" ? "unpublish" : "publish";
     setTransitioningId(service.id);
+    setError(null);
     try {
       const response = await creatorRequest<ServiceEnvelope<CreatorService>>(
         `services/${service.id}/${nextAction}`,
@@ -175,38 +177,32 @@ export function ServiceManager() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-16 text-slate-400 gap-3">
-        <LoaderCircle className="spin" aria-hidden="true" size={20} />
-        <span>{t("loading")}</span>
-      </div>
-    );
-  }
-
-  if (error?.code === "unauthenticated" || error?.code === "forbidden") {
-    return (
-      <div className="bg-[#0e1424] border border-white/10 rounded-2xl p-8 text-center max-w-md mx-auto my-12 space-y-4">
-        <p className="text-slate-300">
-          {t(`errors.${normalizeCreatorErrorCode(error.code)}`)}
-        </p>
-        <Link className="button button--dark" href={`/${locale}/auth/login`}>
-          {t("loginAction")}
-        </Link>
+      <div className="flex flex-col items-center justify-center p-16 text-center text-slate-500 dark:text-white/50">
+        <LoaderCircle className="animate-spin text-blue-500 mb-3" size={32} />
+        <p className="text-sm">{t("loading")}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Global API Error Notice */}
+      {error && (
+        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-300 text-sm">
+          {t(`errors.${normalizeCreatorErrorCode(error.code)}`)}
+        </div>
+      )}
+
       {/* Action Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pb-2 border-b border-slate-200/90 dark:border-white/10">
         <div className="flex items-center gap-3">
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400">
             {items.length} {t("listLabel")}
           </span>
         </div>
         <button
           onClick={openCreate}
-          className="button button--signal inline-flex items-center gap-2"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all min-h-[44px]"
           type="button"
         >
           <CirclePlus size={18} aria-hidden="true" />
@@ -216,19 +212,19 @@ export function ServiceManager() {
 
       {/* Main Content: Services List or Empty State */}
       {items.length === 0 ? (
-        <div className="bg-[#0e1424]/60 border border-white/10 rounded-2xl p-12 text-center max-w-lg mx-auto space-y-4 my-8">
-          <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 mx-auto flex items-center justify-center">
+        <div className="bg-white dark:bg-[#0e1424]/60 border border-slate-200/90 dark:border-white/10 rounded-2xl p-8 sm:p-12 text-center max-w-lg mx-auto space-y-4 my-8 shadow-sm transition-colors">
+          <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 mx-auto flex items-center justify-center">
             <PackagePlus size={24} aria-hidden="true" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white">{t("emptyTitle")}</h3>
-            <p className="text-sm text-slate-400 mt-1 max-w-sm mx-auto">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t("emptyTitle")}</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
               {t("emptyBody")}
             </p>
           </div>
           <button
             onClick={openCreate}
-            className="button button--signal inline-flex items-center gap-2 mt-2"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all min-h-[44px] mt-2"
             type="button"
           >
             <CirclePlus size={18} aria-hidden="true" />
@@ -256,27 +252,27 @@ export function ServiceManager() {
             return (
               <div
                 key={service.id}
-                className="bg-[#0e1424] border border-white/10 rounded-xl p-5 flex flex-col justify-between hover:border-blue-500/30 transition-all group"
+                className="bg-white dark:bg-[#0e1424] border border-slate-200/90 dark:border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col justify-between hover:border-blue-500/40 shadow-sm transition-all group"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <span
-                      className={`text-xs px-2.5 py-0.5 rounded-full font-medium inline-flex items-center gap-1.5 ${
+                      className={`text-xs px-2.5 py-0.5 rounded-full font-semibold inline-flex items-center gap-1.5 ${
                         isPublished
-                          ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400"
-                          : "bg-slate-700/30 border border-slate-600/30 text-slate-400"
+                          ? "bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
+                          : "bg-slate-100 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600/30 text-slate-600 dark:text-slate-400"
                       }`}
                     >
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${
-                          isPublished ? "bg-emerald-400" : "bg-slate-400"
+                          isPublished ? "bg-emerald-500 dark:bg-emerald-400" : "bg-slate-400"
                         }`}
                       />
                       {t(`statuses.${service.status}`)}
                     </span>
                     {service.packages.length > 0 && (
-                      <span className="text-xs text-slate-400 flex items-center gap-1">
-                        <Layers size={13} className="text-slate-500" />
+                      <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                        <Layers size={13} className="text-slate-400 dark:text-slate-500" />
                         {service.packages.length} Packages
                       </span>
                     )}
@@ -284,22 +280,22 @@ export function ServiceManager() {
 
                   <h3
                     onClick={() => openEdit(service)}
-                    className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors cursor-pointer line-clamp-1"
+                    className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors cursor-pointer line-clamp-1"
                   >
                     {service.title}
                   </h3>
 
-                  <p className="text-sm text-slate-400 mt-2 line-clamp-2 leading-relaxed">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 line-clamp-2 leading-relaxed">
                     {service.description}
                   </p>
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between">
+                <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
                   <div>
                     {startingPrice && (
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
                         From{" "}
-                        <span className="text-sm font-semibold text-white">
+                        <span className="text-sm font-semibold text-slate-900 dark:text-white">
                           {startingPrice}
                         </span>
                       </div>
@@ -311,7 +307,7 @@ export function ServiceManager() {
                       <Link
                         href={`/${locale}/creators/${service.creator_slug}/services/${service.slug}`}
                         target="_blank"
-                        className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                        className="p-2 rounded-lg text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
                         title={t("viewPublic")}
                       >
                         <ArrowUpRight size={16} />
@@ -321,13 +317,13 @@ export function ServiceManager() {
                       type="button"
                       onClick={() => togglePublication(service)}
                       disabled={isToggling}
-                      className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                      className="p-2 rounded-lg text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors disabled:opacity-50 min-h-[36px] min-w-[36px] flex items-center justify-center"
                       title={
                         isPublished ? t("unpublish") : t("publish")
                       }
                     >
                       {isToggling ? (
-                        <LoaderCircle className="spin" size={16} />
+                        <LoaderCircle className="animate-spin" size={16} />
                       ) : isPublished ? (
                         <EyeOff size={16} />
                       ) : (
@@ -337,7 +333,7 @@ export function ServiceManager() {
                     <button
                       type="button"
                       onClick={() => openEdit(service)}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-slate-200 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg transition-colors min-h-[36px]"
                     >
                       <Edit2 size={13} />
                       <span>{t("editTitle")}</span>
@@ -355,24 +351,24 @@ export function ServiceManager() {
         <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
             onClick={closeDrawer}
           />
 
           <div className="fixed inset-y-0 right-0 max-w-2xl w-full flex pl-10">
-            <div className="w-full bg-[#0a0e1a] border-l border-white/10 shadow-2xl flex flex-col">
+            <div className="w-full bg-white dark:bg-[#0a0e1a] border-l border-slate-200 dark:border-white/10 shadow-2xl flex flex-col transition-colors">
               {/* Drawer Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 bg-[#0e1424]">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#0e1424]">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-bold text-white">
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                     {draft.id ? t("editTitle") : t("createTitle")}
                   </h2>
                   {draft.id && (
                     <span
-                      className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
+                      className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
                         draft.status === "published"
-                          ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400"
-                          : "bg-slate-700/30 border border-slate-600/30 text-slate-400"
+                          ? "bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
+                          : "bg-slate-100 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600/30 text-slate-600 dark:text-slate-400"
                       }`}
                     >
                       {t(`statuses.${draft.status}`)}
@@ -382,7 +378,7 @@ export function ServiceManager() {
                 <button
                   type="button"
                   onClick={closeDrawer}
-                  className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                  className="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
                 >
                   <X size={20} />
                 </button>
@@ -391,7 +387,7 @@ export function ServiceManager() {
               {/* Drawer Scrollable Body */}
               <form id="service-drawer-form" onSubmit={save} className="flex-1 overflow-y-auto p-6 space-y-6">
                 {error && (
-                  <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+                  <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-300 text-sm">
                     {t(`errors.${normalizeCreatorErrorCode(error.code)}`)}
                   </div>
                 )}
@@ -399,11 +395,11 @@ export function ServiceManager() {
                 {/* Section 1: Overview */}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-400 mb-1.5">
                       {t("fields.title")}
                     </label>
                     <input
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#0e1424] border border-white/10 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0e1424] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-[#0e1424] transition-colors text-sm min-h-[44px]"
                       maxLength={120}
                       minLength={3}
                       onChange={(e) => update({ title: e.target.value })}
@@ -414,11 +410,11 @@ export function ServiceManager() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-400 mb-1.5">
                       {t("fields.slug")}
                     </label>
                     <input
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#0e1424] border border-white/10 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors text-sm font-mono"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0e1424] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-[#0e1424] transition-colors text-sm font-mono min-h-[44px]"
                       maxLength={80}
                       onChange={(e) => update({ slug: e.target.value })}
                       pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
@@ -429,11 +425,11 @@ export function ServiceManager() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-400 mb-1.5">
                       {t("fields.description")}
                     </label>
                     <textarea
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#0e1424] border border-white/10 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors text-sm resize-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0e1424] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-[#0e1424] transition-colors text-sm resize-none"
                       maxLength={3000}
                       minLength={20}
                       onChange={(e) => update({ description: e.target.value })}
@@ -446,13 +442,13 @@ export function ServiceManager() {
                 </div>
 
                 {/* Section 2: Pricing Packages */}
-                <div className="space-y-4 pt-4 border-t border-white/10">
+                <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-white/10">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                         {t("packagesTitle")}
                       </h3>
-                      <p className="text-xs text-slate-400 mt-0.5">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         {draft.packages.length} of 3 tiers
                       </p>
                     </div>
@@ -464,7 +460,7 @@ export function ServiceManager() {
                             packages: [...draft.packages, emptyPackage()],
                           })
                         }
-                        className="text-xs font-semibold text-blue-400 hover:text-blue-300 inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20 transition-colors"
+                        className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 inline-flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-blue-500/10 border border-blue-500/20 transition-colors min-h-[36px]"
                       >
                         <CirclePlus size={14} />
                         <span>{t("addPackage")}</span>
@@ -478,10 +474,10 @@ export function ServiceManager() {
                       return (
                         <div
                           key={`${item.id ?? "new"}-${index}`}
-                          className="bg-[#0e1424] border border-white/10 rounded-xl p-4 space-y-3"
+                          className="bg-slate-50 dark:bg-[#0e1424] border border-slate-200/90 dark:border-white/10 rounded-xl p-4 space-y-3 transition-colors"
                         >
-                          <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
-                            <span className="text-xs font-bold text-slate-300 uppercase tracking-wide">
+                          <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-white/5 pb-2.5">
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                               {t("packageNumber", { number: index + 1 })}
                             </span>
                             {draft.packages.length > 1 && (
@@ -494,7 +490,7 @@ export function ServiceManager() {
                                     ),
                                   })
                                 }
-                                className="text-red-400 hover:text-red-300 p-1 rounded transition-colors"
+                                className="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 p-1 rounded transition-colors"
                                 title={t("removePackage", {
                                   number: index + 1,
                                 })}
@@ -506,11 +502,11 @@ export function ServiceManager() {
 
                           <div className="space-y-3">
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">
+                              <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">
                                 {t("fields.packageName")}
                               </label>
                               <input
-                                className="w-full px-3 py-2 rounded-lg bg-[#131b2e] border border-white/10 text-white focus:outline-none focus:border-blue-500 text-sm"
+                                className="w-full px-3 py-2 rounded-lg bg-white dark:bg-[#131b2e] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-sm min-h-[40px]"
                                 maxLength={80}
                                 minLength={2}
                                 onChange={(e) =>
@@ -524,11 +520,11 @@ export function ServiceManager() {
 
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <label className="block text-xs text-slate-400 mb-1">
+                                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">
                                   {t("fields.currency")}
                                 </label>
                                 <select
-                                  className="w-full px-3 py-2 rounded-lg bg-[#131b2e] border border-white/10 text-white focus:outline-none focus:border-blue-500 text-sm cursor-pointer"
+                                  className="w-full px-3 py-2 rounded-lg bg-white dark:bg-[#131b2e] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-sm cursor-pointer min-h-[40px]"
                                   value={item.currency}
                                   onChange={(e) => {
                                     const currency = e.target
@@ -546,11 +542,11 @@ export function ServiceManager() {
                               </div>
 
                               <div>
-                                <label className="block text-xs text-slate-400 mb-1">
+                                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">
                                   {t("fields.price")}
                                 </label>
                                 <input
-                                  className="w-full px-3 py-2 rounded-lg bg-[#131b2e] border border-white/10 text-white focus:outline-none focus:border-blue-500 text-sm"
+                                  className="w-full px-3 py-2 rounded-lg bg-white dark:bg-[#131b2e] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-sm min-h-[40px]"
                                   min={factor === 1 ? 1 : 0.01}
                                   step={factor === 1 ? 1 : 0.01}
                                   type="number"
@@ -570,11 +566,11 @@ export function ServiceManager() {
 
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <label className="block text-xs text-slate-400 mb-1">
+                                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">
                                   {t("fields.delivery")}
                                 </label>
                                 <input
-                                  className="w-full px-3 py-2 rounded-lg bg-[#131b2e] border border-white/10 text-white focus:outline-none focus:border-blue-500 text-sm"
+                                  className="w-full px-3 py-2 rounded-lg bg-white dark:bg-[#131b2e] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-sm min-h-[40px]"
                                   max={365}
                                   min={1}
                                   type="number"
@@ -589,11 +585,11 @@ export function ServiceManager() {
                               </div>
 
                               <div>
-                                <label className="block text-xs text-slate-400 mb-1">
+                                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">
                                   {t("fields.revisions")}
                                 </label>
                                 <input
-                                  className="w-full px-3 py-2 rounded-lg bg-[#131b2e] border border-white/10 text-white focus:outline-none focus:border-blue-500 text-sm"
+                                  className="w-full px-3 py-2 rounded-lg bg-white dark:bg-[#131b2e] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-sm min-h-[40px]"
                                   max={20}
                                   min={0}
                                   type="number"
@@ -609,11 +605,11 @@ export function ServiceManager() {
                             </div>
 
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">
+                              <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">
                                 {t("fields.packageDescription")}
                               </label>
                               <textarea
-                                className="w-full px-3 py-2 rounded-lg bg-[#131b2e] border border-white/10 text-white focus:outline-none focus:border-blue-500 text-sm resize-none"
+                                className="w-full px-3 py-2 rounded-lg bg-white dark:bg-[#131b2e] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-sm resize-none"
                                 maxLength={1000}
                                 rows={2}
                                 placeholder="What is included in this package..."
@@ -634,17 +630,17 @@ export function ServiceManager() {
               </form>
 
               {/* Drawer Sticky Footer */}
-              <div className="p-5 border-t border-white/10 bg-[#0e1424] flex items-center justify-between">
+              <div className="p-5 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#0e1424] flex items-center justify-between">
                 <div>
                   {draft.id && (
                     <button
                       type="button"
                       onClick={() => togglePublication(draft)}
                       disabled={saving || transitioningId === draft.id}
-                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 transition-colors min-h-[44px]"
                     >
                       {transitioningId === draft.id ? (
-                        <LoaderCircle className="spin" size={14} />
+                        <LoaderCircle className="animate-spin" size={14} />
                       ) : draft.status === "published" ? (
                         <EyeOff size={14} />
                       ) : (
@@ -663,7 +659,7 @@ export function ServiceManager() {
                   <button
                     type="button"
                     onClick={closeDrawer}
-                    className="button button--quiet px-4 py-2"
+                    className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-200 dark:bg-white/5 text-slate-700 dark:text-white/60 dark:hover:text-white border border-slate-300 dark:border-white/10 transition-colors min-h-[44px]"
                   >
                     Cancel
                   </button>
@@ -671,10 +667,10 @@ export function ServiceManager() {
                     form="service-drawer-form"
                     type="submit"
                     disabled={saving}
-                    className="button button--signal inline-flex items-center gap-2 px-5 py-2"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all disabled:opacity-50 min-h-[44px]"
                   >
                     {saving ? (
-                      <LoaderCircle className="spin" size={16} />
+                      <LoaderCircle className="animate-spin" size={16} />
                     ) : (
                       <Save size={16} />
                     )}

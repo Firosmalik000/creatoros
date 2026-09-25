@@ -47,6 +47,20 @@ spacing:
   shell-gutter: "16px"
   section-mobile: "90px"
   section-desktop: "126px"
+breakpoints:
+  xs: "max-width: 479px"
+  sm: "min-width: 640px"
+  md: "min-width: 768px"
+  lg: "min-width: 1024px"
+  xl: "min-width: 1280px"
+  2xl: "min-width: 1536px"
+dark-mode:
+  canvas: "#070a10"
+  surface: "#0e1424"
+  surface-muted: "#131b2e"
+  ink: "#f8fafc"
+  border: "rgba(255, 255, 255, 0.12)"
+  border-soft: "rgba(255, 255, 255, 0.08)"
 components:
   button-signal:
     backgroundColor: "{colors.signal}"
@@ -103,6 +117,17 @@ The homepage hero uses the display token above; large section headings scale fro
 The public shell is centered at a maximum width of `1240px` with `16px` side gutters, tightening to `14px` below `820px` and `12px` below `560px`. Desktop sections use generous vertical rhythm around `126–140px`; mobile sections compress to roughly `88–96px` without becoming dense.
 
 The homepage opens as a split proposition/contact-sheet composition, then alternates full-width bands, a three-card roster, a sticky two-column workflow, an asymmetric agency statement, and a decisive coral close. At `820px`, the hero and workflow stack, the roster becomes two columns, and navigation collapses. At `560px`, cards and calls to action become single-column/full-width. The complete proposition, all three creator subjects, and both hero actions must remain visible and usable from `320px` upward without horizontal clipping.
+
+### Responsive Breakpoint Matrix
+
+The application layout standardizes across 6 core viewport tiers:
+
+- **`xs` (< 480px / 320px–479px, compact mobile)**: Single-column core flow, touch targets $\ge 44\text{px}$, stats stack in 1 or 2 columns, compact padding (`12px–16px`), zero horizontal scroll.
+- **`sm` (≥ 640px, large mobile / phablets)**: 2-column cards, flexible filter rows, horizontal swipe tabs with indicator.
+- **`md` (≥ 768px, tablets)**: Mobile hamburger drawer triggers below `lg`; modal dialogs center with maximum width; 2-3 column grids.
+- **`lg` (≥ 1024px, laptops / desktop)**: Permanent desktop sidebar (`288px` / `w-72`), expanded workspace shell.
+- **`xl` (≥ 1280px, standard desktop)**: Maximum width capped container (`1280px` / `max-w-7xl`).
+- **`2xl` (≥ 1536px, ultra-wide)**: Proportional padding, capped line lengths (60–75ch) for readable editorial content.
 
 Public pages are server-rendered and content-first. Preserve localized metadata, canonical URLs, `hreflang` alternates, Open Graph imagery, robots rules, and valid structured data; index only intentional public routes.
 

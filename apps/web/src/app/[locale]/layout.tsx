@@ -66,6 +66,8 @@ export async function generateMetadata({
   };
 }
 
+import { ThemeProvider, themeInitScript } from "@/components/theme-provider";
+
 export default async function LocaleLayout({ children, params }: LayoutProps) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
@@ -74,10 +76,15 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
   const messages = await getMessages();
 
   return (
-    <html lang={htmlLanguage[locale as AppLocale]}>
+    <html lang={htmlLanguage[locale as AppLocale]} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <ThemeProvider defaultTheme="dark">
+            {children}
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

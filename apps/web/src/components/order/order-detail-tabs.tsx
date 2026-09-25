@@ -31,7 +31,7 @@ export function OrderDetailTabs({
   return (
     <div className="order-tabs-container">
       {/* Tab Navigation */}
-      <nav className="order-tabs" aria-label="Order sections" role="tablist">
+      <nav className="order-tabs no-scrollbar" aria-label="Order sections" role="tablist">
         <button
           type="button"
           role="tab"

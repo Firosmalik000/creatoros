@@ -26,15 +26,15 @@ export default async function NewCampaignPage({ params }: PageProps) {
   return (
     <ClientCampaignShell locale={locale}>
       <div className="space-y-6">
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4">
           <div>
             <Link
               href={`/${locale}/campaigns`}
-              className="text-xs text-slate-400 hover:text-white transition-colors mb-1 inline-block"
+              className="text-xs text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors mb-1 inline-block"
             >
               ← {t("backToCampaigns")}
             </Link>
-            <h1 className="text-2xl font-bold tracking-tight text-white">{t("newCampaign")}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t("newCampaign")}</h1>
           </div>
         </div>
 

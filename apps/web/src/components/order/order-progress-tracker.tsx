@@ -144,7 +144,7 @@ export function OrderProgressTracker({
   return (
     <section className="order-progress-tracker" aria-label="Order progress">
       {/* Milestone Stepper */}
-      <div className="order-stepper">
+      <div className="order-stepper no-scrollbar">
         <ol className="order-stepper__list">
           {steps.map((step) => {
             const Icon = step.icon;

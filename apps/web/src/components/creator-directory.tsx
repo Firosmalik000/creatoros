@@ -235,11 +235,11 @@ export function CreatorDirectory({
               value={filters.country}
               className="h-9 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
             >
-              <option value="" className="bg-[#0e1424] text-white">
+              <option value="" className="bg-white dark:bg-[#0e1424] text-slate-900 dark:text-white">
                 {t("allCountries")}
               </option>
               {countryCodes.map((code) => (
-                <option key={code} value={code} className="bg-[#0e1424] text-white">
+                <option key={code} value={code} className="bg-white dark:bg-[#0e1424] text-slate-900 dark:text-white">
                   {t(`countries.${code}`)}
                 </option>
               ))}
@@ -252,16 +252,16 @@ export function CreatorDirectory({
               value={filters.language}
               className="h-9 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
             >
-              <option value="" className="bg-[#0e1424] text-white">
+              <option value="" className="bg-white dark:bg-[#0e1424] text-slate-900 dark:text-white">
                 {t("allLanguages")}
               </option>
-              <option value="id" className="bg-[#0e1424] text-white">
+              <option value="id" className="bg-white dark:bg-[#0e1424] text-slate-900 dark:text-white">
                 {t("languages.id")}
               </option>
-              <option value="en" className="bg-[#0e1424] text-white">
+              <option value="en" className="bg-white dark:bg-[#0e1424] text-slate-900 dark:text-white">
                 {t("languages.en")}
               </option>
-              <option value="ms" className="bg-[#0e1424] text-white">
+              <option value="ms" className="bg-white dark:bg-[#0e1424] text-slate-900 dark:text-white">
                 {t("languages.ms")}
               </option>
             </select>
@@ -273,16 +273,16 @@ export function CreatorDirectory({
               value={filters.sort}
               className="h-9 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
             >
-              <option value="featured" className="bg-[#0e1424] text-white">
+              <option value="featured" className="bg-white dark:bg-[#0e1424] text-slate-900 dark:text-white">
                 {t("sort.featured")}
               </option>
-              <option value="newest" className="bg-[#0e1424] text-white">
+              <option value="newest" className="bg-white dark:bg-[#0e1424] text-slate-900 dark:text-white">
                 {t("sort.newest")}
               </option>
-              <option value="followers" className="bg-[#0e1424] text-white">
+              <option value="followers" className="bg-white dark:bg-[#0e1424] text-slate-900 dark:text-white">
                 {t("sort.followers")}
               </option>
-              <option value="engagement" className="bg-[#0e1424] text-white">
+              <option value="engagement" className="bg-white dark:bg-[#0e1424] text-slate-900 dark:text-white">
                 {t("sort.engagement")}
               </option>
             </select>

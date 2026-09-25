@@ -14,6 +14,32 @@ Before implementation, read `README.md`, `PRODUCT.md`, `DESIGN.md`, `docs/ROADMA
 8. Public pages must consider metadata, canonical, hreflang, structured data, accessibility, and responsive behavior.
 9. Add or update tests and run lint, typecheck, tests, and build before completion.
 10. Avoid broad unrelated refactors and premature abstractions.
+11. Standardize responsive design across all viewports (`xs`, `sm`, `md`, `lg`, `xl`, `2xl`): zero horizontal scrollbars, minimum 44px touch targets on mobile, and collapsible navigation below `lg`.
+12. Support dual-theme (Dark and Light modes) across all operational surfaces and dashboards with semantic color tokens.
+
+## Responsive Breakpoint Standards
+
+Always follow the standard 6-tier viewport breakpoints:
+
+- **`xs` (< 480px / 320px–479px, compact mobile)**:
+  - Layout: Single-column for primary content, 2-column max for compact key metrics.
+  - Controls: Full-width action buttons and inputs where appropriate; minimum 44×44px touch target.
+  - Typography: Scaled with `clamp()`; no text overflow or label clipping.
+  - Spacing: Compact container padding (`px-3 py-4`).
+  - Strict zero tolerance for unintended horizontal scrollbars (`overflow-x: hidden` on viewport shells).
+- **`sm` (≥ 640px, large mobile / phablets)**:
+  - Layout: 2-column cards, flexible filter rows, horizontal scroll tabs with indicator.
+  - Spacing: Standard mobile padding (`px-4 sm:px-6`).
+- **`md` (≥ 768px, tablets / portrait iPad)**:
+  - Navigation: Mobile hamburger drawer triggers below `lg`; modal dialogs center with maximum width.
+  - Grid: 2 to 3 columns for card lists and metrics.
+- **`lg` (≥ 1024px, laptops / compact desktop)**:
+  - Navigation: Permanent desktop sidebar (`w-72`), expanded workspace shell.
+  - Layout: Multi-column split views (e.g. order details and deliverables side by side).
+- **`xl` (≥ 1280px, standard desktop)**:
+  - Shell: Max-width capped container (`max-w-7xl` or `1280px`) centered with generous breathing room.
+- **`2xl` (≥ 1536px, ultra-wide / high-res monitors)**:
+  - Layout: Proportional padding, capped line lengths (60–75ch) for readable editorial content.
 
 ## Phase tracking checklist
 
